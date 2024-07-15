@@ -5,13 +5,16 @@
     flex-wrap: wrap;
     justify-content: flex-start;
     gap: 15px;
+    -webkit-user-select: none;  /* Safari */
+    -ms-user-select: none;      /* IE 10 and IE 11 */
+    user-select: none;          /* Standard syntax */
 }
-.hpv-filter-bar .trigger-btn:hover {
+.hpv-filter-bar .master-btn:hover {
     background-color: #fff;
     border-color: #3273dc;
     color: #3273dc;
 }
-.hpv-filter-bar .trigger-btn {
+.hpv-filter-bar .master-btn {
     font-size: 14px;
     padding: 4px;
     border-radius: 4px;
@@ -31,7 +34,7 @@
     border-radius: 4px;
     box-shadow: 0 2px 3px rgba(10, 10, 10, .1), 0 0 0 1px rgba(10, 10, 10, .1);
 }
-.hpv-filter-bar .floating-content.floating-content-trigger-btn {
+.hpv-filter-bar .floating-content.floating-content-master-btn {
     min-width: 12rem;
 }
 .hpv-filter-bar .floating-content .main-filter-content .filter-content-header {
@@ -114,11 +117,3 @@
 /* .hpv-filter-bar .selector-btn.is-readonly {
     color: #bdbdbd;
 }
-.hpv-filter-bar .selector-btn {
-    font-size: 0.8rem;
-	color: #000;
-	border-style: dashed;
-	border-width: thin;
-	border-color: #8a8bff;
-} */
-
