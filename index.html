@@ -57,11 +57,25 @@
         const domainFilter = new FilterBarFilter({
             "id": "dominio",
             "label": "Domínio",
+            "faIcon": "fas fa-globe",
+        });
+
+        const statusOsFilter = new FilterBarFilter({
+            "id": "tipo-status-os",
+            "label": "Status",
+            "faIcon": "fas fa-check-circle",
             "immediateDisplay": true,
-            "uniqueInstance": true,
+        });
+
+        const wordFilter = new FilterBarFilter({
+            "id": "palavra",
+            "label": "Palavra",
+            "faIcon": "fas fa-font",
         });
 
         filterBar.addFilter(domainFilter);
+        filterBar.addFilter(statusOsFilter);
+        filterBar.addFilter(wordFilter);
 
         // filterBar.defineFilter({
         //     "id": "dominio",

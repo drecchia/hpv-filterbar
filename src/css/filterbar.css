@@ -23,7 +23,7 @@
     padding-left: .55em;
     padding-right: .55em;
 }
-.floating-content {
+.hpv-filter-bar .floating-content {
     width: max-content;
     position: absolute;
     background-color: white;
@@ -31,13 +31,13 @@
     border-radius: 4px;
     box-shadow: 0 2px 3px rgba(10, 10, 10, .1), 0 0 0 1px rgba(10, 10, 10, .1);
 }
-.floating-content.floating-content-trigger-btn {
-    max-width: 200px;
+.hpv-filter-bar .floating-content.floating-content-trigger-btn {
+    min-width: 12rem;
 }
-.floating-content .main-filter-content .filter-content-header {
+.hpv-filter-bar .floating-content .main-filter-content .filter-content-header {
     font-size: 16px;
     border-bottom-style: solid;
-    border-bottom-color: #8b8b8b;
+    border-bottom-color: #cbcbcb;
     border-bottom-width: 1px;
     padding: 0.5rem 1rem;
     font-weight: bold;
@@ -50,14 +50,14 @@
     align-items: baseline;
 }
 
-.floating-content .main-filter-content .filter-content-body {
+.hpv-filter-bar .floating-content .main-filter-content .filter-content-body {
     padding-top: .5rem;
     padding-bottom: .5rem;
     display: flex;
     flex-direction: column;
 }
 
-.floating-content .main-filter-content .filter-content-item {
+.hpv-filter-bar .floating-content .main-filter-content .filter-content-item {
     padding-right: 16px;
     font-size: .875rem;
     line-height: 1.5;
@@ -69,7 +69,7 @@
     color: #4a4a4a;
 }
 
-.floating-content .main-filter-content .filter-content-item span {
+.hpv-filter-bar .floating-content .main-filter-content .filter-content-item span {
     margin-left: 8px;
 }
 
