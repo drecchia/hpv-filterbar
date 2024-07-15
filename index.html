@@ -61,27 +61,49 @@
             },
         });
 
-        const domainFilter = new FilterBarFilter({
+        const domainFilter = new HpvFilterContext({
             "id": "dominio",
-            "label": "Domínio",
-            "faIcon": "fas fa-globe",
+            "picker": {
+                "label": "Domínio",
+                "faIcon": "fas fa-globe",
+                "maxInstances": 1,
+            },
+            "selector": {
+                "label": "Domínio(s)",
+                "defaultText": "Todos",
+                "immediateDisplay": true,
+                "disabledSelector": false,
+                
+                "onShowDropdown": () => {},
+                "onHideDropdown": () => {},
+
+                "createDom": () => {
+                    const button = document.createElement('button');
+                    return button;
+                }
+            }
         });
 
-        const statusOsFilter = new FilterBarFilter({
+        const statusOsFilter = new HpvFilterContext({
             "id": "tipo-status-os",
-            "label": "Status",
-            "faIcon": "fas fa-check-circle",
+            "picker": {
+                "label": "Status",
+                "faIcon": "fas fa-check-circle",
+            },
             "immediateDisplay": true,
+            "disabledSelector": true,
         });
 
-        const wordFilter = new FilterBarFilter({
+        const wordFilter = new HpvFilterContext({
             "id": "palavra",
-            "label": "Palavra",
-            "faIcon": "fas fa-font",
+            "picker": {
+                "label": "Palavra",
+                "faIcon": "fas fa-font",
+            },
         });
 
-        filterBar.addFilter(domainFilter);
         filterBar.addFilter(statusOsFilter);
+        filterBar.addFilter(domainFilter);
         filterBar.addFilter(wordFilter);
 
         // filterBar.defineFilter({
