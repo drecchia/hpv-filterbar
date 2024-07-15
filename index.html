@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HpvFilterBar Component</title>
+
+    <!-- We just need a way to display floating elements -->
+    <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.1/css/bulma.min.css" integrity="sha256-BOxhuXmRtUd4wUx4Qvsm4ofSwkd5C0WW3ui2uJRHzT4=" crossorigin="anonymous"> -->
+    
+    <!-- We just need a way to display floating elements -->
+    <script src="https://cdn.jsdelivr.net/npm/@floating-ui/core@1.6.4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@floating-ui/dom@1.6.7"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.11.2/js/all.min.js" integrity="sha256-qM7QTJSlvtPSxVRjVWNM2OfTAz/3k5ovHOKmKXuYMO4=" defer crossorigin="anonymous"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 10px;
+        }
+        #myFilterBar {
+            background-color: #e5e5e5;
+            border-radius: 4px;
+        }
+    </style>
+    <link rel="stylesheet" type="text/css" href="./src/css/filterbar.css">
+    <script src="./src/js/filterbar.js"></script>
+
+    <!-- <link rel="stylesheet" type="text/css" href="./dist/css/all.css">
+    <script src="./dist/js/all.min.js"></script> -->
+</head>
+<body>
+    <div id="myFilterBar"></div>
+
+    <script>
+        const filterBar = new HpvFilterBar('myFilterBar', {
+            filterBtnTitle: 'Selecionar um filtro',
+            attachDropdown: (source, content) => {
+                console.log("Attaching dropdown...");
+
+                FloatingUIDOM.computePosition(source, content, {
+                    placement: 'bottom-start',
+                    middleware: [
+                        FloatingUIDOM.offset(20),
+                        FloatingUIDOM.flip(),
+                        FloatingUIDOM.shift()
+                    ]
+                }).then(({x, y}) => {
+                    Object.assign(content.style, {
+                        left: `${x}px`,
+                        top: `${y}px`,
+                    });
+                });
+            },
+        });
+
+        const domainFilter = new FilterBarFilter({
+            "id": "dominio",
+            "label": "Domínio",
+            "immediateDisplay": true,
+            "uniqueInstance": true,
+        });
+
+        filterBar.addFilter(domainFilter);
+
+        // filterBar.defineFilter({
+        //     "id": "dominio",
+        //     "label": "Domínio",
+        //     "faIcon": "fas fa-globe",
+        //     "immediateDisplay": true,
+        //     "onApplyFilter": (filter) => {
+        //         console.log("Carregando " + filter.id);
+
+        //         runOnDomReady(() => {
+        //             eventBus.emit('remoteListarDominio.start');
+        //         });
+        //     },
+        //     "onRemoveFilter": (filter) => {},
+        //     "uniqueInstance": true,
+        //     "selector": {
+        //         "label": "Domínio(s)",
+        //         "defaultText": "Todos",
+        //         "selectionMode": "multi-checkbox",
+        //         "onShowDropdown": () => {},
+        //         "onChangeSelector": () => {},
+        //         "filter": {
+        //             "mode": "remote",
+        //             "digits": 3
+        //         },
+        //         "remote": "",
+        //     },
+        // });
+    </script>
+</body>
+</html>
