@@ -3,6 +3,7 @@ class HpvFilterBar {
         const defaultOpts = {
             filterBtnTitle: 'Select filter',
             attachDropdown: () => {},
+            onToggleDropdown: () => {},
         };
 
         this.options = Object.assign({}, defaultOpts, opts);
@@ -76,6 +77,11 @@ class HpvFilterBar {
     toggleMainFilterFloatingContentVisibility() {
         const ddContent = document.querySelector('.' + this.filterBtnFloatingContentClass);
         ddContent.style.display = ddContent.style.display == 'block' ? 'none' : 'block';
+
+        if ( this.options.onToggleDropdown ) {
+            const source = document.querySelector('.' + this.filterBtnClass);
+            this.options.onToggleDropdown(source, ddContent);
+        }
     }
 
     addFilter(filter) {
@@ -94,6 +100,7 @@ class HpvFilterBar {
         filterItem.addEventListener('click', (e) => {
             e.preventDefault();
             filter.addToScreen();
+            this.toggleMainFilterFloatingContentVisibility();
         });
 
         if ( filter.options.immediateDisplay ) {
@@ -114,17 +121,17 @@ class FilterBarFilter {
             immediateDisplay: false,
             uniqueInstance: true,
             // fire call back when filter is added to filterBar
-            onAddToBar: () => {},
+            onAddToBar: (filterbar, filter) => {},
             // fire call back when filter is removed from filterBar and user no longer can interact with it
-            onRemoveFromBar: () => {},
+            onRemoveFromBar: (filterbar, filter) => {},
             // fire call back when filter clicked and dropdown is opened
-            onOpenDropDown: () => {},
+            onOpenDropDown: (filterbar, filter) => {},
             // fire call back when filter clicked and dropdown is closed
-            onCloseDropDown: () => {},
+            onCloseDropDown: (filterbar, filter) => {},
             // allow custom dom creation implementation
-            onCreateDom: () => {},
+            onCreateDom: (filterbar, filter) => {},
             // allow custom rules extraction implementation
-            onGetRules: () => {},
+            onGetRules: (filterbar, filter) => {},
         }
 
         // generate random id if not provided
@@ -157,6 +164,37 @@ class FilterBarFilter {
     addToScreen() {
         // Add filter to filterBar, so user can see it and interact with it
         console.log(`Adding filter ${this.options.id} to screen`);
+
+        // <div class="dropdown">
+        //     <span class="dropdown-text">Faturado: Não</span>
+        //     <div class="dropdown-arrow-container">
+        //         <span class="dropdown-arrow"></span>
+        //     </div>
+        // </div>
+
+        const filterSelectorBtn = document.createElement('div');
+        filterSelectorBtn.classList.add('selector-btn');
+
+        const filterSelectorText = document.createElement('span');
+        filterSelectorText.classList.add('selector-btn-text');
+        filterSelectorText.innerText = this.options.label;
+
+        const filterSelectorArrowContainer = document.createElement('div');
+        filterSelectorArrowContainer.classList.add('selector-btn-arrow-container');
+
+        const filterSelectorArrow = document.createElement('span');
+        filterSelectorArrow.classList.add('selector-btn-arrow');
+
+        filterSelectorArrowContainer.appendChild(filterSelectorArrow);
+        filterSelectorBtn.appendChild(filterSelectorText);
+        filterSelectorBtn.appendChild(filterSelectorArrowContainer);
+
+        // get position of trigger-btn
+        const triggerBtn = document.querySelector('.' + this.parent.filterBtnClass);
+
+        // add filterSelectorBtn before triggerBtn
+        triggerBtn.parentNode.insertBefore(filterSelectorBtn, triggerBtn);
+
         this.options.onAddToBar(this.parent, this);
     }
 

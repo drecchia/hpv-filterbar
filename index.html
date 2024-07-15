@@ -19,7 +19,7 @@
             margin: 10px;
         }
         #myFilterBar {
-            background-color: #e5e5e5;
+            background-color: #f3f4f6;
             border-radius: 4px;
         }
     </style>
@@ -33,24 +33,31 @@
     <div id="myFilterBar"></div>
 
     <script>
+        const computFloatingPosition = (source, content) => {
+            FloatingUIDOM.computePosition(source, content, {
+                placement: 'bottom-start',
+                middleware: [
+                    FloatingUIDOM.offset(6),
+                    FloatingUIDOM.flip(),
+                    FloatingUIDOM.shift()
+                ]
+            }).then(({x, y}) => {
+                Object.assign(content.style, {
+                    left: `${x}px`,
+                    top: `${y}px`,
+                });
+            });
+        };
+
         const filterBar = new HpvFilterBar('myFilterBar', {
             filterBtnTitle: 'Selecionar um filtro',
+            onToggleDropdown: (source, content) => {
+                console.log("Toggling dropdown...");
+                computFloatingPosition(source, content);
+            },
             attachDropdown: (source, content) => {
                 console.log("Attaching dropdown...");
-
-                FloatingUIDOM.computePosition(source, content, {
-                    placement: 'bottom-start',
-                    middleware: [
-                        FloatingUIDOM.offset(20),
-                        FloatingUIDOM.flip(),
-                        FloatingUIDOM.shift()
-                    ]
-                }).then(({x, y}) => {
-                    Object.assign(content.style, {
-                        left: `${x}px`,
-                        top: `${y}px`,
-                    });
-                });
+                computFloatingPosition(source, content);
             },
         });
 
