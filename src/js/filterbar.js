@@ -1,7 +1,7 @@
 class HpvFilterBar {
     constructor(containerId, opts) {
         const defaultOpts = {
-            filterBtnTitle: 'Select filter',
+            masterBtnTitle: 'Select filter',
             attachDropdown: (source, target) => {},
             onToggleDropdown: (source, target) => {},
         };
@@ -12,20 +12,20 @@ class HpvFilterBar {
 
         this.rootClass = 'hpv-filter-bar';
         this.floatingContentClass = 'floating-content';        
-        this.filterBtnClass = 'master-btn';
-        this.filterBtnFloatingContentClass = 'floating-content-master-btn';
+        this.masterBtnClass = 'master-btn';
+        this.masterBtnFloatingContentClass = 'floating-content-master-btn';
 
-        this.filterBtn = null;
+        this.masterBtn = null;
         this.init();
     }
 
     init() {
         this.setupMainContainer();
-        this.setupFilterBtn();
+        this.setupmasterBtn();
     }
 
-    setupFilterBtn() {
-        this.filterBtn = new MasterBtn(this);
+    setupmasterBtn() {
+        this.masterBtn = new MasterBtn(this);
     }
 
     setupMainContainer() {
@@ -33,12 +33,20 @@ class HpvFilterBar {
         this.container.classList.add(this.rootClass);
     }
 
+    removeFilter(filterId) {
+        const filter = this.filters.get(filterId);
+        if ( !filter ) return;
+
+        filter.removeFromScreen();
+        this.filters.delete(filterId);
+    }
+
     addFilter(filter) {
         filter.setParent(this);
         this.filters.set(filter.getId(), filter);
 
         const menuEntry = filter.createMenuEntry();
-        this.filterBtn.addMenuEntry(menuEntry);
+        this.masterBtn.addMenuEntry(menuEntry);
 
         if ( filter.options.immediateDisplay ) {
             filter.addToScreen();
@@ -64,18 +72,18 @@ class MasterBtn {
     }
 
     setupMasterBtn() {
-        const { filterBtnTitle } = this.options;
-        const { filterBtnClass } = this.parent;
+        const { masterBtnTitle } = this.options;
+        const { masterBtnClass } = this.parent;
 
-        const filterBtn = document.createElement('div');
-        filterBtn.classList.add(filterBtnClass);
-        filterBtn.innerHTML = `<span title="${filterBtnTitle}">
+        const masterBtn = document.createElement('div');
+        masterBtn.classList.add(masterBtnClass);
+        masterBtn.innerHTML = `<span title="${masterBtnTitle}">
             <i class="fas fa-filter"></i>
         </span>`;
         
-        filterBtn.addEventListener('click', this.toggleMainFilterFloatingContentVisibility.bind(this));
+        masterBtn.addEventListener('click', this.toggleMasterFilterFloatingContentVisibility.bind(this));
 
-        this.parent.container.appendChild(filterBtn);
+        this.parent.container.appendChild(masterBtn);
     }
 
     disableMenuEntry(id) {
@@ -93,13 +101,13 @@ class MasterBtn {
     setupMasterFloatingContent() {
         // attach floating dropdown to filterMasterBtn
         const attachFn = this.options.attachDropdown;
-        const { floatingContentClass, filterBtnFloatingContentClass, filterBtnClass } = this.parent;
+        const { floatingContentClass, masterBtnFloatingContentClass, masterBtnClass } = this.parent;
 
         if (typeof attachFn === 'function') {
             // create a new div on document root
             const newNode = document.createElement('div');
             newNode.classList.add(floatingContentClass);
-            newNode.classList.add(filterBtnFloatingContentClass);
+            newNode.classList.add(masterBtnFloatingContentClass);
 
             // add html
             newNode.innerHTML += `<div class="master-filter-content">
@@ -114,7 +122,7 @@ class MasterBtn {
             this.parent.container.appendChild(newNode);
 
             // get source element ( master-filter-btn )
-            const source = document.querySelector('.' + filterBtnClass);
+            const source = document.querySelector('.' + masterBtnClass);
 
             // call the attach function to attach the dropdown to the new node, so we can be framework agnostic
             attachFn(source, newNode);
@@ -122,10 +130,10 @@ class MasterBtn {
     }
 
     addMenuEntry(filterItem) {
-        const { filterBtnFloatingContentClass } = this.parent;
+        const { masterBtnFloatingContentClass } = this.parent;
 
         // add to dropdown .filter-bar-main-dropdown-content
-        const ddContent = document.querySelector('.' + filterBtnFloatingContentClass);
+        const ddContent = document.querySelector('.' + masterBtnFloatingContentClass);
         const listBody = ddContent.querySelector('.filter-content-body');
 
         if ( this.options.immediateDisplay ) {
@@ -135,14 +143,14 @@ class MasterBtn {
         listBody.appendChild(filterItem);
     }
 
-    toggleMainFilterFloatingContentVisibility() {
-        const { filterBtnFloatingContentClass, filterBtnClass } = this.parent;
+    toggleMasterFilterFloatingContentVisibility() {
+        const { masterBtnFloatingContentClass, masterBtnClass } = this.parent;
 
-        const ddContent = document.querySelector('.' + filterBtnFloatingContentClass);
+        const ddContent = document.querySelector('.' + masterBtnFloatingContentClass);
         ddContent.style.display = ddContent.style.display == 'block' ? 'none' : 'block';
 
         if ( this.options.onToggleDropdown ) {
-            const source = document.querySelector('.' + filterBtnClass);
+            const source = document.querySelector('.' + masterBtnClass);
             this.options.onToggleDropdown(source, ddContent);
         }
     }
@@ -175,7 +183,7 @@ class FilterBarFilter {
         this.options = Object.assign({}, this.defaultOptions, opts);
         this.parent = null;
         // count how many instances of this filter are in the filterBar
-        this.filterInstances = 0;
+        this.instances = 0;
         this.allowMoreInstances = true;
     }
 
@@ -208,7 +216,7 @@ class FilterBarFilter {
             // add to filter bar
             this.addToScreen();
             // hide dropdown
-            this.parent.filterBtn.toggleMainFilterFloatingContentVisibility();
+            this.parent.masterBtn.toggleMasterFilterFloatingContentVisibility();
         });
 
         return filterItem;
@@ -221,7 +229,7 @@ class FilterBarFilter {
             return;
         }
 
-        this.filterInstances++;
+        this.instances++;
 
         // Add filter to filterBar, so user can see it and interact with it
         console.log(`Adding filter ${this.options.id} to screen`);
@@ -245,7 +253,7 @@ class FilterBarFilter {
         filterSelectorBtn.appendChild(filterSelectorArrowContainer);
 
         // get position of master-btn
-        const masterBtn = document.querySelector('.' + this.parent.filterBtnClass);
+        const masterBtn = document.querySelector('.' + this.parent.masterBtnClass);
 
         // add filterSelectorBtn before masterBtn
         masterBtn.parentNode.insertBefore(filterSelectorBtn, masterBtn);
@@ -257,12 +265,12 @@ class FilterBarFilter {
 
     processMaxInstances() {
         if ( this.options.uniqueInstance ) {
-            if ( this.filterInstances == 1 ) {
+            if ( this.instances == 1 ) {
                 this.allowMoreInstances = false;
-                this.parent.filterBtn.disableMenuEntry(this.options.id);
+                this.parent.masterBtn.disableMenuEntry(this.options.id);
             } else {
                 this.allowMoreInstances = true;
-                this.parent.filterBtn.enableMenuEntry(this.options.id);
+                this.parent.masterBtn.enableMenuEntry(this.options.id);
             }
         }
     }
@@ -274,7 +282,7 @@ class FilterBarFilter {
         const filterSelectorBtn = document.getElementById(this.options.id + '-selector-btn');
         filterSelectorBtn.remove();
 
-        this.filterInstances--;
+        this.instances--;
 
         this.options.onRemoveFromBar(this.parent, this);
 
