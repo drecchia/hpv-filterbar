@@ -78,6 +78,18 @@ class MasterBtn {
         this.parent.container.appendChild(filterBtn);
     }
 
+    disableMenuEntry(id) {
+        const menuEntry = document.getElementById(id + '-menu-entry');
+        if ( !menuEntry ) return;
+        menuEntry.classList.add('is-readonly');
+    }
+
+    enableMenuEntry(id) {
+        const menuEntry = document.getElementById(id + '-menu-entry');
+        if ( !menuEntry ) return;
+        menuEntry.classList.remove('is-readonly');
+    }
+
     setupMasterFloatingContent() {
         // attach floating dropdown to filterMasterBtn
         const attachFn = this.options.attachDropdown;
@@ -90,7 +102,7 @@ class MasterBtn {
             newNode.classList.add(filterBtnFloatingContentClass);
 
             // add html
-            newNode.innerHTML += `<div class="main-filter-content">
+            newNode.innerHTML += `<div class="master-filter-content">
                 <div class="filter-content-header">
                     <strong>Filtros</strong>
                 </div>
@@ -101,7 +113,7 @@ class MasterBtn {
             // add to dom
             this.parent.container.appendChild(newNode);
 
-            // get source element ( main-filter-btn )
+            // get source element ( master-filter-btn )
             const source = document.querySelector('.' + filterBtnClass);
 
             // call the attach function to attach the dropdown to the new node, so we can be framework agnostic
@@ -164,6 +176,7 @@ class FilterBarFilter {
         this.parent = null;
         // count how many instances of this filter are in the filterBar
         this.filterInstances = 0;
+        this.allowMoreInstances = true;
     }
 
     getId() {
@@ -190,15 +203,6 @@ class FilterBarFilter {
         filterItem.classList.add('filter-content-item');
         filterItem.innerHTML = `<i class="${this.getFaIcon()}"></i> <span class="menu-text">${this.getLabel()}</span>`;
 
-        if ( this.options.uniqueInstance && this.filterInstances == 1 ) {
-            // disable item in dropdown
-            console.log(`Disabling more filters of ${this.options.id} in dropdown`);
-            filterItem.classList.add('is-readonly');
-
-            // no event listener
-            return filterItem;
-        }
-
         filterItem.addEventListener('click', (e) => {
             e.preventDefault();
             // add to filter bar
@@ -212,6 +216,11 @@ class FilterBarFilter {
 
     // fire the action to add filter to filterBar
     addToScreen() {
+        if ( !this.allowMoreInstances ) {
+            console.log(`Filter ${this.options.id} is unique and already added to screen`);
+            return;
+        }
+
         this.filterInstances++;
 
         // Add filter to filterBar, so user can see it and interact with it
@@ -219,6 +228,7 @@ class FilterBarFilter {
 
         const filterSelectorBtn = document.createElement('div');
         filterSelectorBtn.classList.add('selector-btn');
+        filterSelectorBtn.id = this.options.id + '-selector-btn';
 
         const filterSelectorText = document.createElement('span');
         filterSelectorText.classList.add('selector-btn-text');
@@ -241,6 +251,34 @@ class FilterBarFilter {
         masterBtn.parentNode.insertBefore(filterSelectorBtn, masterBtn);
 
         this.options.onAddToBar(this.parent, this);
+
+        this.processMaxInstances();
+    }
+
+    processMaxInstances() {
+        if ( this.options.uniqueInstance ) {
+            if ( this.filterInstances == 1 ) {
+                this.allowMoreInstances = false;
+                this.parent.filterBtn.disableMenuEntry(this.options.id);
+            } else {
+                this.allowMoreInstances = true;
+                this.parent.filterBtn.enableMenuEntry(this.options.id);
+            }
+        }
+    }
+
+    removeFromScreen() {
+        // Remove filter from filterBar, so user can no longer interact with it
+        console.log(`Removing filter ${this.options.id} from screen`);
+
+        const filterSelectorBtn = document.getElementById(this.options.id + '-selector-btn');
+        filterSelectorBtn.remove();
+
+        this.filterInstances--;
+
+        this.options.onRemoveFromBar(this.parent, this);
+
+        this.processMaxInstances();
     }
 
     // get inner rules for remote filter from current element
