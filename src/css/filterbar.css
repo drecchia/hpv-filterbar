@@ -37,10 +37,10 @@
 .hpv-filter-bar .floating-content .filter-content-item > svg, .hpv-filter-bar .floating-content .filter-content-item .icon {
     width: 16px;
 }
-.hpv-filter-bar .floating-content .picker-floating-content {
+.hpv-filter-bar .floating-content {
     min-width: 12rem;
 }
-.hpv-filter-bar .floating-content .picker-floating-content .filter-content-header {
+.hpv-filter-bar .floating-content .floating-content-header {
     font-size: 16px;
     border-bottom-style: solid;
     border-bottom-color: #cbcbcb;
@@ -56,19 +56,48 @@
     align-items: baseline;
 }
 
-.hpv-filter-bar .floating-content .picker-floating-content .filter-content-body {
+.hpv-filter-bar .floating-content .floating-content-header .remove-filter::before {
+    content: "✖";
+}
+.hpv-filter-bar .floating-content .floating-content-header .remove-filter:hover {
+    background-color: #ff9999;
+    color: black;
+}
+.hpv-filter-bar .floating-content .floating-content-header .remove-filter {
+    background-color: #b7b7b7;
+    color: white;
+    border-radius: 2px;
+    font-size: .65rem;
+    font-weight: bold;
+    border-color: #dbdbdb;
+    border-width: 1px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    user-select: none;
+    position: relative;
+    border: 1px solid transparent;
+    transition: background-color 0.3s;
+    padding-bottom: 2px;
+    padding-left: 5px;
+    padding-right: 5px;
+    padding-top: 2px;
+}
+
+.hpv-filter-bar .floating-content.picker-floating-content .floating-content-body {
     padding-top: .5rem;
     padding-bottom: .5rem;
     display: flex;
     flex-direction: column;
 }
 
-.hpv-filter-bar .floating-content .picker-floating-content .filter-content-item.is-readonly {
+.hpv-filter-bar .floating-content.picker-floating-content .filter-content-item.is-readonly {
     color: #bdbdbd;
     cursor: not-allowed;
     pointer-events: none;
 }
-.hpv-filter-bar .floating-content .picker-floating-content .filter-content-item {
+.hpv-filter-bar .floating-content.picker-floating-content .filter-content-item {
     padding-right: 16px;
     font-size: .875rem;
     line-height: 1.5;
@@ -80,7 +109,7 @@
     color: #4a4a4a;
 }
 
-.hpv-filter-bar .floating-content .picker-floating-content .filter-content-item span {
+.hpv-filter-bar .floating-content.picker-floating-content .filter-content-item span {
     margin-left: 8px;
 }
 

@@ -89,9 +89,23 @@
                 "onAddToBar": () => {},
                 "onRemoveFromBar": () => {},
 
-                "constructHtmlLabel": (filterCtx) => {
+                "constructHtmlLabel": (filterCtx, domDict, dom) => {
                     const opts = filterCtx.getSelector().options;
-                    return `${opts.label}:&nbsp;<b>${opts.defaultText}</b>`;
+                    let selectedLabels = null;
+
+                    if ( domDict.hasOwnProperty('checklist') ) {
+                        const selectedItems = domDict.checklist.items.getSelectedItems();
+                        // join selectedItems.label with ','
+                        if ( selectedItems.length > 0 ) {
+                            selectedLabels = selectedItems.map(item => item.label).join(', ');
+                            // keep first 15 characters and add '...'
+                            if ( selectedLabels.length > 15 ) {
+                                selectedLabels = selectedLabels.substring(0, 15) + '...';
+                            }
+                        }
+                    }
+                    
+                    return `${opts.label}:&nbsp;<b>${selectedLabels ? selectedLabels : opts.defaultText}</b>`;
                 },
 
                 "getRules": (filterCtx, domDict, dom) => {
@@ -183,7 +197,7 @@
                 "disabledSelector": true,
                 "immediateDisplay": true,
                 "createDom": () => {}, // no need to create a DOM element
-                "constructHtmlLabel": (filterCtx) => {
+                "constructHtmlLabel": (filterCtx, domDict, dom) => {
                     const opts = filterCtx.getSelector().options;
                     return `${opts.label}:&nbsp;<b>${opts.defaultText}</b>`;
                 },
@@ -210,9 +224,23 @@
             "selector": new HpvFilterBar.Selector({
                 "label": "Faturado",
                 "defaultText": "Todas",
-                "constructHtmlLabel": (filterCtx) => {
+                "constructHtmlLabel": (filterCtx, domDict, dom) => {
                     const opts = filterCtx.getSelector().options;
-                    return `${opts.label}:&nbsp;<b>${opts.defaultText}</b>`;
+                    let selectedLabels = null;
+
+                    if ( domDict.hasOwnProperty('checklist') ) {
+                        const selectedItems = domDict.checklist.items.getSelectedItems();
+                        // join selectedItems.label with ','
+                        if ( selectedItems.length > 0 ) {
+                            selectedLabels = selectedItems.map(item => item.label).join(', ');
+                            // keep first 15 characters and add '...'
+                            if ( selectedLabels.length > 15 ) {
+                                selectedLabels = selectedLabels.substring(0, 15) + '...';
+                            }
+                        }
+                    }
+                    
+                    return `${opts.label}:&nbsp;<b>${selectedLabels ? selectedLabels : opts.defaultText}</b>`;
                 },
                 "getRules": (filterCtx, domDict, dom) => {
                     if ( domDict.hasOwnProperty('checklist') ) {
@@ -274,14 +302,44 @@
             "selector": new HpvFilterBar.Selector({
                 "label": "Palavra",
                 "defaultText": "Todas",
-                "constructHtmlLabel": (filterCtx) => {
+                "constructHtmlLabel": (filterCtx, domDict, dom) => {
                     const opts = filterCtx.getSelector().options;
-                    return `${opts.label}:&nbsp;<b>${opts.defaultText}</b>`;
+                    const defaultValue = `${opts.label}:&nbsp;<b>${opts.defaultText}</b>`;
+
+                    if ( !dom ) {
+                        return defaultValue;
+                    } else if ( dom ) {
+                        const value = dom.querySelector('input').value;
+                        
+                        if ( value.length == 0 ) {
+                            return defaultValue;
+                        }
+
+                        return `${opts.label}:&nbsp;<b>${value}</b>`;
+                    }
+                },
+                "getRules": (filterCtx, domDict, dom) => {
+                    if ( !dom ) return [];
+
+                    const value = dom.querySelector('input').value;
+                    if ( value.length == 0 ) {
+                        return [];
+                    }
+                    
+                    return [{
+                        'word': dom.querySelector('input').value,
+                    }];
                 },
                 "createDom": () => {
-                    const button = document.createElement('button');
-                    button.textContent = 'Selecionar Palavra';
-                    return button;
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.placeholder = 'Digite uma palavra';
+                    
+                    const div = document.createElement('div');
+                    div.classList.add('filter-word-container');
+                    div.appendChild(input);
+
+                    return div;
                 }
             }),
         });
@@ -296,7 +354,7 @@
             "selector": new HpvFilterBar.Selector({
                 "label": "Data Conclusão",
                 "defaultText": "Ult. 30 dias",
-                "constructHtmlLabel": (filterCtx) => {
+                "constructHtmlLabel": (filterCtx, domDict, dom) => {
                     const opts = filterCtx.getSelector().options;
                     return `${opts.label}:&nbsp;<b>${opts.defaultText}</b>`;
                 },
@@ -329,7 +387,7 @@
             "selector": new HpvFilterBar.Selector({
                 "label": "Serviço(s)",
                 "defaultText": "Todos",
-                "constructHtmlLabel": (filterCtx) => {
+                "constructHtmlLabel": (filterCtx, domDict, dom) => {
                     const opts = filterCtx.getSelector().options;
                     return `${opts.label}:&nbsp;<b>${opts.defaultText}</b>`;
                 },

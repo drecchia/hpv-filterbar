@@ -2,18 +2,21 @@ const HpvFilterBar = {
     // --------------------------------------------------------------------------------------------------------------------
     CssClassName: {
         ROOT: 'hpv-filter-bar',
-        FLOATING_CONTENT: 'floating-content',
         IS_READONLY: 'is-readonly',
+        
+        FLOATING_CONTENT: 'floating-content',
+        FLOATING_CONTENT_HEADER: 'floating-content-header',
+        FLOATING_CONTENT_BODY: 'floating-content-body',
+        
         PICKER_BTN: 'picker-btn',
+        PICKER_ITEM: 'filter-content-item',
         PICKER_FLOATING_CONTENT: 'picker-floating-content',
+
         SELECTOR_BTN: 'selector-btn',
         SELECTOR_BTN_DISABLED: 'selector-btn-disabled',
         SELECTOR_BTN_TEXT: 'selector-btn-text',
         SELECTOR_BTN_ARROW_CONTAINER: 'selector-btn-arrow-container',
         SELECTOR_BTN_ARROW: 'selector-btn-arrow',
-        SELECTOR_CONTENT_HEADER: 'filter-content-header',
-        SELECTOR_CONTENT_BODY: 'filter-content-body',
-        SELECTOR_CONTENT_ITEM: 'filter-content-item',
     },
 
     // --------------------------------------------------------------------------------------------------------------------
@@ -84,17 +87,31 @@ const HpvFilterBar = {
                 const parent = el.parentNode;
                 let wrapperNode = null;
 
+                console.log(parent);
+
                 // if parent has class .floating-content
-                if (parent && parent.classList.contains(HpvFilterBar.CssClassName.FLOATING_CONTENT)) {
+                if (parent && parent.classList.contains(HpvFilterBar.CssClassName.FLOATING_CONTENT_BODY)) {
                     // no need to create new node
-                    wrapperNode = parent;
+                    wrapperNode = parent.parentNode;
                 } else {
                     // create new node
                     wrapperNode = document.createElement('div');
                     wrapperNode.classList.add(HpvFilterBar.CssClassName.FLOATING_CONTENT);
 
+                    // add html
+                    wrapperNode.innerHTML = `
+                        <div class="${HpvFilterBar.CssClassName.FLOATING_CONTENT_HEADER}">
+                            <strong>Filtros</strong>
+                            <div class="remove-filter"></div>
+                        </div>`;
+
+                    const contentBody = document.createElement('div');
+                    contentBody.classList.add(HpvFilterBar.CssClassName.FLOATING_CONTENT_BODY);
+                    
+                    wrapperNode.appendChild(contentBody);
+
                     // 4. add to floating div
-                    wrapperNode.appendChild(el);
+                    contentBody.appendChild(el);
                     // 5. add to dom
                     this.container.appendChild(wrapperNode);
 
@@ -105,9 +122,15 @@ const HpvFilterBar = {
                 this.options.attachDropdown(source, wrapperNode);
                 
                 // 6. set dropdown visible
-                wrapperNode.style.display = wrapperNode.style.display == 'block' ? 'none' : 'block';
+                if ( wrapperNode.style.display == 'block' ) {
+                    wrapperNode.style.display = 'none';
+                    // recalculate selector label
+                    selector.updateLabel();
+                } else {
+                    wrapperNode.style.display = 'block';
+                }
 
-                // 7. do callback
+                // TODO: do callback
             });
         }
 
@@ -292,13 +315,11 @@ const HpvFilterBar = {
                 newNode.classList.add(HpvFilterBar.CssClassName.FLOATING_CONTENT, HpvFilterBar.CssClassName.PICKER_FLOATING_CONTENT);
                 // add html
                 newNode.innerHTML = `
-                    <div class="${HpvFilterBar.CssClassName.PICKER_FLOATING_CONTENT}">
-                        <div class="${HpvFilterBar.CssClassName.SELECTOR_CONTENT_HEADER}">
+                        <div class="${HpvFilterBar.CssClassName.FLOATING_CONTENT_HEADER}">
                             <strong>Filtros</strong>
                         </div>
-                        <div class="${HpvFilterBar.CssClassName.SELECTOR_CONTENT_BODY}">
-                        </div>
-                    </div>`;
+                        <div class="${HpvFilterBar.CssClassName.FLOATING_CONTENT_BODY}">
+                        </div>`;
 
                 // add to dom
                 this.parent.container.appendChild(newNode);
@@ -314,7 +335,7 @@ const HpvFilterBar = {
         addPicker(filterPicker) {
             // add to dropdown .filter-bar-main-dropdown-content
             const ddContent = document.querySelector('.' + HpvFilterBar.CssClassName.PICKER_FLOATING_CONTENT);
-            const listBody = ddContent.querySelector('.' + HpvFilterBar.CssClassName.SELECTOR_CONTENT_BODY);
+            const listBody = ddContent.querySelector('.' + HpvFilterBar.CssClassName.FLOATING_CONTENT_BODY);
             
             if (this.options.immediateDisplay) {
                 this.addToScreen();
@@ -367,7 +388,7 @@ const HpvFilterBar = {
             // enforce control properties
             pickerItem.id = contextId + '-menu-entry';
             pickerItem.href = '#';
-            pickerItem.classList.add(HpvFilterBar.CssClassName.SELECTOR_CONTENT_ITEM);
+            pickerItem.classList.add(HpvFilterBar.CssClassName.PICKER_ITEM);
 
             pickerItem.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -423,6 +444,17 @@ const HpvFilterBar = {
             this.filterCtx = filterCtx;
         }
 
+        updateLabel() {
+            const filterSelectorBtn = document.getElementById(this.filterCtx.getId() + '-selector-btn-0');
+            const filterSelectorText = filterSelectorBtn.querySelector('.' + HpvFilterBar.CssClassName.SELECTOR_BTN_TEXT);
+
+            if ( this.options.constructHtmlLabel && this.options.constructHtmlLabel instanceof Function ) {
+                filterSelectorText.innerHTML = this.options.constructHtmlLabel(this.filterCtx, this.domDict, this.dom);
+            } else {
+                filterSelectorText.innerHTML = this.options.label;
+            }
+        }
+
         // fire the action to add filter to filterBar
         addToScreen() {
             const contextId = this.filterCtx.getId();
@@ -437,7 +469,7 @@ const HpvFilterBar = {
             filterSelectorText.classList.add(HpvFilterBar.CssClassName.SELECTOR_BTN_TEXT);
 
             if ( this.options.constructHtmlLabel && this.options.constructHtmlLabel instanceof Function ) {
-                filterSelectorText.innerHTML = this.options.constructHtmlLabel(this.filterCtx);
+                filterSelectorText.innerHTML = this.options.constructHtmlLabel(this.filterCtx, this.domDict, this.dom);
             } else {
                 filterSelectorText.innerHTML = this.options.label;
             }
