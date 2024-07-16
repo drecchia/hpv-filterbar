@@ -137,7 +137,7 @@ const HpvFilterBar = {
     Context: class {
         constructor(opts = {}) {
             this.options = {
-                picker: new HpvFilterBar.PickerItem(),
+                picker: new HpvFilterBar.ItemPicker(),
                 selector: new HpvFilterBar.Selector(),
                 maxInstances: 1,
                 ...opts
@@ -297,7 +297,7 @@ const HpvFilterBar = {
     },
 
     // --------------------------------------------------------------------------------------------------------------------
-    PickerItem: class {
+    ItemPicker: class {
         constructor(opts = {}) {
             this.options = {
                 label: 'Filter 1',
@@ -322,10 +322,11 @@ const HpvFilterBar = {
         }
 
         createMenuEntry() {
-            const { faIcon, label, createEl: constructPickerItem } = this.options;
+            const { faIcon, label, createEl } = this.options;
             const contextId = this.filterCtx.getId();
 
-            const pickerItem = constructPickerItem(this.filterCtx, this.options);
+            // call constructor function to create element
+            const pickerItem = createEl(this.filterCtx, this.options);
             // enforce control properties
             pickerItem.id = contextId + '-menu-entry';
             pickerItem.href = '#';
