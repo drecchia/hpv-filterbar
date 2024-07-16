@@ -12,6 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@floating-ui/core@1.6.4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@floating-ui/dom@1.6.7"></script>
 
+    <!--Just for filter icon, but we can change constructor -->
     <script src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.11.2/js/all.min.js" integrity="sha256-qM7QTJSlvtPSxVRjVWNM2OfTAz/3k5ovHOKmKXuYMO4=" defer crossorigin="anonymous"></script>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hpv-checklist@1.1.0/dist/css/all.css" integrity="sha256-O/R8owX3xVB8jgP2RAIfOfYqjL+C9+3sVK4+TD0EX4s=" crossorigin="anonymous">
@@ -31,6 +32,21 @@
         #checklistDomainContainer .hpv-checklist-checkbox-list {
             max-height: 50vh;
             overflow-y: auto;
+        }
+        .floating-content.palavra-floating-content .floating-content-body {
+            padding: 10px;
+        }
+        .floating-content.faturado-floating-content .floating-content-body {
+            padding-top: 10px;
+        }
+        .floating-content.faturado-floating-content .hpv-checklist .search-container {
+            display: none;
+        }
+        .floating-content.faturado-floating-content .hpv-checklist .hpv-checklist-content {
+            padding-top: 0px;
+        }
+        .floating-content.faturado-floating-content .hpv-checklist .hr-no-optgroups {
+            display: none;
         }
     </style>
     <link rel="stylesheet" type="text/css" href="./src/css/filterbar.css">
@@ -166,10 +182,10 @@
                     });
         
                     const items = [
-                        { id: 1, label: 'Apple', optgroup: 'Fruits', value: 1 },
+                        { id: 1, label: 'Apple', optgroup: 'Fruits', value: 0 },
                         { id: 2, label: 'Banana', optgroup: 'Fruits', disabled: true },
-                        { id: 3, label: 'Cherry', optgroup: 'Fruits', value: 2 },
-                        { id: 10, label: 'Carrot', optgroup: 'Vegetables', value: 3 },
+                        { id: 3, label: 'Cherry', optgroup: 'Fruits', value: 0 },
+                        { id: 10, label: 'Carrot', optgroup: 'Vegetables', value: 0 },
                         { id: 11, label: 'Broccoli', optgroup: 'Vegetables' },
                         { id: 12, label: 'Spinach', optgroup: 'Vegetables' },
                         { id: 20, label: 'Gol Gti 1.0', optgroup: 'Cars' },
