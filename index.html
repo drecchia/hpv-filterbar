@@ -64,7 +64,7 @@
         const domainFilter = new HpvFilterBar.Context({
             "id": "dominio",
             "maxInstances": 1,
-            "picker": new HpvFilterBar.PickerItem({
+            "picker": new HpvFilterBar.ItemPicker({
                 "label": "Domínio",
                 "faIcon": "fas fa-globe",
             }),
@@ -79,9 +79,9 @@
                 "onAddToBar": () => {},
                 "onRemoveFromBar": () => {},
 
-                "constructHtmlLabel": (filterBar, filterCtx, dom) => {
+                "constructHtmlLabel": (filterCtx) => {
                     const opts = filterCtx.getSelector().options;
-                    return `${opts.label}&nbsp;<b>${opts.defaultText}</b>`;
+                    return `${opts.label}:&nbsp;<b>${opts.defaultText}</b>`;
                 },
 
                 "getRules": (filterCtx, dom) => {
@@ -102,7 +102,7 @@
         const statusOsFilter = new HpvFilterBar.Context({
             "id": "tipo-status-os",
             "maxInstances": 1,
-            "picker": new HpvFilterBar.PickerItem({
+            "picker": new HpvFilterBar.ItemPicker({
                 "label": "Status",
                 "faIcon": "fas fa-check-circle",
             }),
@@ -112,6 +112,10 @@
                 "disabledSelector": true,
                 "immediateDisplay": true,
                 "createDom": () => {}, // no need to create a DOM element
+                "constructHtmlLabel": (filterCtx) => {
+                    const opts = filterCtx.getSelector().options;
+                    return `${opts.label}:&nbsp;<b>${opts.defaultText}</b>`;
+                },
                 "getRules": (bar, filterCtx, dom) => {
                     return [{
                         "idStatusServico": "027yIAt4HGYZki1WZh03F",
@@ -120,20 +124,91 @@
             }),
         });
 
+        const statusFaturamentoFilter = new HpvFilterBar.Context({
+            "id": "faturado",
+            "maxInstances": 1,
+            "picker": new HpvFilterBar.ItemPicker({
+                "label": "Faturado",
+                "faIcon": "fas fa-money-bill-wave",
+            }),
+            "selector": new HpvFilterBar.Selector({
+                "label": "Faturado",
+                "defaultText": "Todas",
+                "constructHtmlLabel": (filterCtx) => {
+                    const opts = filterCtx.getSelector().options;
+                    return `${opts.label}:&nbsp;<b>${opts.defaultText}</b>`;
+                },
+            }),
+        });
+
         const wordFilter = new HpvFilterBar.Context({
             "id": "palavra",
             "maxInstances": 1,
-            "picker": new HpvFilterBar.PickerItem({
+            "picker": new HpvFilterBar.ItemPicker({
                 "label": "Palavra",
                 "faIcon": "fas fa-font",
             }),
             "selector": new HpvFilterBar.Selector({
+                "label": "Palavra",
+                "defaultText": "Todas",
+                "constructHtmlLabel": (filterCtx) => {
+                    const opts = filterCtx.getSelector().options;
+                    return `${opts.label}:&nbsp;<b>${opts.defaultText}</b>`;
+                },
+            }),
+        });
+
+        const dateRangeFilter = new HpvFilterBar.Context({
+            "id": "date-range",
+            "maxInstances": 1,
+            "picker": new HpvFilterBar.ItemPicker({
+                "label": "Data Conclusão",
+                "faIcon": "fas fa-calendar-alt",
+            }),
+            "selector": new HpvFilterBar.Selector({
+                "label": "Data Conclusão",
+                "defaultText": "Ult. 30 dias",
+                "constructHtmlLabel": (filterCtx) => {
+                    const opts = filterCtx.getSelector().options;
+                    return `${opts.label}:&nbsp;<b>${opts.defaultText}</b>`;
+                },
+                "getRules": (bar, filterCtx, dom) => {
+                    if ( !dom ) {
+                        return [{
+                            "startAt": 1,
+                            "endAt": 30,
+                        }];
+                    }
+
+                    // TODO: extract from dom
+                    return [];
+                },
+            }),
+        });
+
+        const servicosFilter = new HpvFilterBar.Context({
+            "id": "servico",
+            "maxInstances": 1,
+            "picker": new HpvFilterBar.ItemPicker({
+                "label": "Serviço",
+                "faIcon": "fas fa-tools",
+            }),
+            "selector": new HpvFilterBar.Selector({
+                "label": "Serviço(s)",
+                "defaultText": "Todos",
+                "constructHtmlLabel": (filterCtx) => {
+                    const opts = filterCtx.getSelector().options;
+                    return `${opts.label}:&nbsp;<b>${opts.defaultText}</b>`;
+                },
             }),
         });
 
         filterBar.addFilter(statusOsFilter);
         filterBar.addFilter(domainFilter);
+        filterBar.addFilter(statusFaturamentoFilter);
         filterBar.addFilter(wordFilter);
+        filterBar.addFilter(dateRangeFilter);
+        filterBar.addFilter(servicosFilter);
 
         // filterBar.defineFilter({
         //     "id": "dominio",

@@ -305,7 +305,7 @@ const HpvFilterBar = {
                 createEl: (filterCtx, pickerOpts) => {
                     const pickerItem = document.createElement('a');
                     pickerItem.href = '#';
-                    pickerItem.innerHTML = `<i class="${pickerOpts.faIcon}"></i> <span class="menu-text">${pickerOpts.label}</span>`;
+                    pickerItem.innerHTML = `<i class="${pickerOpts.faIcon} icon"></i> <span class="menu-text">${pickerOpts.label}</span>`;
 
                     return pickerItem;
                 },
@@ -352,7 +352,6 @@ const HpvFilterBar = {
                 defaultText: 'All',
                 immediateDisplay: false,
                 disabledSelector: false,
-                maxInstances: 100,
                 onShowDropdown: () => {},
                 onHideDropdown: () => {},
                 createDom: (filterCtx) => {},
@@ -398,7 +397,12 @@ const HpvFilterBar = {
 
             const filterSelectorText = document.createElement('span');
             filterSelectorText.classList.add(HpvFilterBar.CssClassName.SELECTOR_BTN_TEXT);
-            filterSelectorText.innerText = this.options.label;
+
+            if ( this.options.constructHtmlLabel && this.options.constructHtmlLabel instanceof Function ) {
+                filterSelectorText.innerHTML = this.options.constructHtmlLabel(this.filterCtx);
+            } else {
+                filterSelectorText.innerHTML = this.options.label;
+            }
 
             const filterSelectorArrowContainer = document.createElement('div');
             filterSelectorArrowContainer.classList.add(HpvFilterBar.CssClassName.SELECTOR_BTN_ARROW_CONTAINER);
