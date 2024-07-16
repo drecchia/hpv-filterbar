@@ -50,7 +50,7 @@
         };
 
         const filterBar = new HpvFilterBar('myFilterBar', {
-            filterBtnTitle: 'Selecionar um filtro',
+            pickerBtnTitle: 'Selecionar um filtro',
             onToggleDropdown: (source, content) => {
                 console.log("Toggling dropdown...");
                 computFloatingPosition(source, content);
@@ -63,43 +63,53 @@
 
         const domainFilter = new HpvFilterContext({
             "id": "dominio",
-            "picker": {
+            "picker": new HpvPicker({
                 "label": "Domínio",
                 "faIcon": "fas fa-globe",
-                "maxInstances": 1,
-            },
-            "selector": {
+            }),
+            "selector": new HpvSelector({
                 "label": "Domínio(s)",
                 "defaultText": "Todos",
-                "immediateDisplay": true,
+                "immediateDisplay": false,
                 "disabledSelector": false,
+                "maxInstances": 1,
                 
-                "onShowDropdown": () => {},
-                "onHideDropdown": () => {},
+                "onOpenDropdown": () => {},
+                "onCloseDropdown": () => {},
+                "onAddToBar": () => {},
+                "onRemoveFromBar": () => {},
 
                 "createDom": () => {
                     const button = document.createElement('button');
                     return button;
                 }
-            }
+            }),
         });
 
         const statusOsFilter = new HpvFilterContext({
             "id": "tipo-status-os",
-            "picker": {
+            "picker": new HpvPicker({
                 "label": "Status",
                 "faIcon": "fas fa-check-circle",
-            },
-            "immediateDisplay": true,
-            "disabledSelector": true,
+            }),
+            "selector": new HpvSelector({
+                "label": "Status",
+                "defaultText": "Todos",
+                "disabledSelector": true,
+                "immediateDisplay": true,
+                "maxInstances": 1,
+            }),
         });
 
         const wordFilter = new HpvFilterContext({
             "id": "palavra",
-            "picker": {
+            "picker": new HpvPicker({
                 "label": "Palavra",
                 "faIcon": "fas fa-font",
-            },
+            }),
+            "selector": new HpvSelector({
+                "maxInstances": 1,
+            }),
         });
 
         filterBar.addFilter(statusOsFilter);

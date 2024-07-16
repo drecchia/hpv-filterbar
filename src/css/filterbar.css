@@ -34,10 +34,10 @@
     border-radius: 4px;
     box-shadow: 0 2px 3px rgba(10, 10, 10, .1), 0 0 0 1px rgba(10, 10, 10, .1);
 }
-.hpv-filter-bar .floating-content .picker-filter-content {
+.hpv-filter-bar .floating-content .picker-floating-content {
     min-width: 12rem;
 }
-.hpv-filter-bar .floating-content .picker-filter-content .filter-content-header {
+.hpv-filter-bar .floating-content .picker-floating-content .filter-content-header {
     font-size: 16px;
     border-bottom-style: solid;
     border-bottom-color: #cbcbcb;
@@ -53,19 +53,19 @@
     align-items: baseline;
 }
 
-.hpv-filter-bar .floating-content .picker-filter-content .filter-content-body {
+.hpv-filter-bar .floating-content .picker-floating-content .filter-content-body {
     padding-top: .5rem;
     padding-bottom: .5rem;
     display: flex;
     flex-direction: column;
 }
 
-.hpv-filter-bar .floating-content .picker-filter-content .filter-content-item.is-readonly {
+.hpv-filter-bar .floating-content .picker-floating-content .filter-content-item.is-readonly {
     color: #bdbdbd;
     cursor: not-allowed;
     pointer-events: none;
 }
-.hpv-filter-bar .floating-content .picker-filter-content .filter-content-item {
+.hpv-filter-bar .floating-content .picker-floating-content .filter-content-item {
     padding-right: 16px;
     font-size: .875rem;
     line-height: 1.5;
@@ -77,7 +77,7 @@
     color: #4a4a4a;
 }
 
-.hpv-filter-bar .floating-content .picker-filter-content .filter-content-item span {
+.hpv-filter-bar .floating-content .picker-floating-content .filter-content-item span {
     margin-left: 8px;
 }
 
