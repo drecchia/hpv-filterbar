@@ -34,6 +34,9 @@
     border-radius: 4px;
     box-shadow: 0 2px 3px rgba(10, 10, 10, .1), 0 0 0 1px rgba(10, 10, 10, .1);
 }
+.hpv-filter-bar .floating-content .filter-content-item > svg, .hpv-filter-bar .floating-content .filter-content-item .icon {
+    width: 16px;
+}
 .hpv-filter-bar .floating-content .picker-floating-content {
     min-width: 12rem;
 }
@@ -87,7 +90,7 @@
 .hpv-filter-bar .selector-btn {
     display: flex;
     align-items: center;
-    width: 120px;
+    min-width: 120px;
     border: 1px solid #ccc;
     border-radius: 4px;
     font-family: Arial, sans-serif;
