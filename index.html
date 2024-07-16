@@ -63,7 +63,8 @@
 
         const domainFilter = new HpvFilterBar.Context({
             "id": "dominio",
-            "picker": new HpvFilterBar.Picker({
+            "maxInstances": 1,
+            "picker": new HpvFilterBar.PickerItem({
                 "label": "Domínio",
                 "faIcon": "fas fa-globe",
             }),
@@ -72,15 +73,27 @@
                 "defaultText": "Todos",
                 "immediateDisplay": false,
                 "disabledSelector": false,
-                "maxInstances": 1,
                 
                 "onOpenDropdown": () => {},
                 "onCloseDropdown": () => {},
                 "onAddToBar": () => {},
                 "onRemoveFromBar": () => {},
 
+                "constructHtmlLabel": (filterBar, filterCtx, dom) => {
+                    const opts = filterCtx.getSelector().options;
+                    return `${opts.label}&nbsp;<b>${opts.defaultText}</b>`;
+                },
+
+                "getRules": (filterCtx, dom) => {
+                    return [{
+                        "id": "dominio",
+                        "label": "Domínio",
+                    }];
+                },
+
                 "createDom": () => {
                     const button = document.createElement('button');
+                    button.textContent = 'Selecionar Domínio';
                     return button;
                 }
             }),
@@ -88,7 +101,8 @@
 
         const statusOsFilter = new HpvFilterBar.Context({
             "id": "tipo-status-os",
-            "picker": new HpvFilterBar.Picker({
+            "maxInstances": 1,
+            "picker": new HpvFilterBar.PickerItem({
                 "label": "Status",
                 "faIcon": "fas fa-check-circle",
             }),
@@ -97,18 +111,23 @@
                 "defaultText": "Todos",
                 "disabledSelector": true,
                 "immediateDisplay": true,
-                "maxInstances": 1,
+                "createDom": () => {}, // no need to create a DOM element
+                "getRules": (bar, filterCtx, dom) => {
+                    return [{
+                        "idStatusServico": "027yIAt4HGYZki1WZh03F",
+                    }];
+                },
             }),
         });
 
         const wordFilter = new HpvFilterBar.Context({
             "id": "palavra",
-            "picker": new HpvFilterBar.Picker({
+            "maxInstances": 1,
+            "picker": new HpvFilterBar.PickerItem({
                 "label": "Palavra",
                 "faIcon": "fas fa-font",
             }),
             "selector": new HpvFilterBar.Selector({
-                "maxInstances": 1,
             }),
         });
 
