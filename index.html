@@ -13,6 +13,9 @@
     <script src="https://cdn.jsdelivr.net/npm/@floating-ui/dom@1.6.7"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.11.2/js/all.min.js" integrity="sha256-qM7QTJSlvtPSxVRjVWNM2OfTAz/3k5ovHOKmKXuYMO4=" defer crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hpv-checklist@1.1.0/dist/css/all.css" integrity="sha256-O/R8owX3xVB8jgP2RAIfOfYqjL+C9+3sVK4+TD0EX4s=" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/hpv-checklist@1.1.0/dist/js/all.min.js" integrity="sha256-TkVBLs32wG5Vi9v3Npc1xqGJnqE775+iIji+MOg9TSY=" crossorigin="anonymous"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -21,6 +24,13 @@
         #myFilterBar {
             background-color: #f3f4f6;
             border-radius: 4px;
+        }
+        #checklistDomainContainer {
+            min-width: 300px;
+        }
+        #checklistDomainContainer .hpv-checklist-checkbox-list {
+            max-height: 50vh;
+            overflow-y: auto;
         }
     </style>
     <link rel="stylesheet" type="text/css" href="./src/css/filterbar.css">
@@ -84,17 +94,78 @@
                     return `${opts.label}:&nbsp;<b>${opts.defaultText}</b>`;
                 },
 
-                "getRules": (filterCtx, dom) => {
-                    return [{
-                        "id": "dominio",
-                        "label": "Domínio",
-                    }];
+                "getRules": (filterCtx, domDict, dom) => {
+                    if ( domDict.hasOwnProperty('checklist') ) {
+                        const selectedItems = domDict.checklist.items.getSelectedItems();
+                        if ( selectedItems.length > 0 ) {
+                            return selectedItems.map(item => {
+                                return {
+                                    "idDominio": item.key,
+                                };
+                            });
+                        }
+                    }
+
+                    return [];
                 },
 
-                "createDom": () => {
-                    const button = document.createElement('button');
-                    button.textContent = 'Selecionar Domínio';
-                    return button;
+                "createDom": (filterCtx, domDict) => {
+                    const container = document.createElement('div');
+                    container.id = 'checklistDomainContainer';
+                    document.body.appendChild(container);
+
+                    const recalculateLabel = (checkList) => {
+                    };
+
+                    domDict.checklist = new HpvCheckList('checklistDomainContainer', {
+                        searchPlaceholder: "Buscar por...",
+                        selectAllMainText: "Selec. Todos Visíveis",
+                        selectAllGroupText: "Selec. Grupo",
+                        clearSearchTooltip: "Limpar a Busca",
+                        emptyText: "Nenhum item disponível",
+                        disabledText: "Este item está desabilitado",
+                        defaultOptGroupText: "Padrão",
+                        selectMode: 'multiple', // 'single' or 'multiple'
+                        states: [0, 1, 2],
+                        maxSelectableItems: 1000,
+                        searchMode: 'local',
+                        onSelect: recalculateLabel,
+                        onDeselect: recalculateLabel,
+                        onSelectGroup: recalculateLabel,
+                        onDeselectGroup: recalculateLabel,
+                        onCollapseGroup: (checkList, groupName, group, changedItems) => console.log('Collapsed group:', groupName, group, changedItems),
+                        onExpandGroup: (checkList, groupName, group, changedItems) => console.log('Expanded group:', groupName, group, changedItems),
+                        onSelectAll: recalculateLabel,
+                        onDeselectAll: recalculateLabel,
+        
+                        onLocalSearchResult: (checkList, searchTerm, visibleItems) => console.log('Search completed for term:', searchTerm),
+                        onSearchInputDelay: (checkList, searchTerm, visibleItems) => console.log('Delayed search for:', searchTerm),
+                        onClearSearch: () => console.log('Search cleared'),
+        
+                        fieldMap: {
+                            keyField: 'id',
+                            labelField: 'label',
+                            valueField: 'value',
+                            optgroupField: 'optgroup',
+                            disabledField: 'disabled',
+                        },
+                    });
+        
+                    const items = [
+                        { id: 1, label: 'Apple', optgroup: 'Fruits', value: 1 },
+                        { id: 2, label: 'Banana', optgroup: 'Fruits', disabled: true },
+                        { id: 3, label: 'Cherry', optgroup: 'Fruits', value: 2 },
+                        { id: 10, label: 'Carrot', optgroup: 'Vegetables', value: 3 },
+                        { id: 11, label: 'Broccoli', optgroup: 'Vegetables' },
+                        { id: 12, label: 'Spinach', optgroup: 'Vegetables' },
+                        { id: 20, label: 'Gol Gti 1.0', optgroup: 'Cars' },
+                        { id: 21, label: 'Fiat Palio V8', optgroup: 'Cars' },
+                        { id: 22, label: 'Camaro Bubblebee', optgroup: 'Cars' },
+                    ];
+        
+                    domDict.checklist.addItems(items);
+                    
+                    return container;
                 }
             }),
         });
@@ -116,11 +187,16 @@
                     const opts = filterCtx.getSelector().options;
                     return `${opts.label}:&nbsp;<b>${opts.defaultText}</b>`;
                 },
-                "getRules": (bar, filterCtx, dom) => {
+                "getRules": (filterCtx, domDict, dom) => {
                     return [{
                         "idStatusServico": "027yIAt4HGYZki1WZh03F",
                     }];
                 },
+                "createDom": () => {
+                    const button = document.createElement('button');
+                    button.textContent = 'Selecionar Status';
+                    return button;
+                }
             }),
         });
 
@@ -138,6 +214,53 @@
                     const opts = filterCtx.getSelector().options;
                     return `${opts.label}:&nbsp;<b>${opts.defaultText}</b>`;
                 },
+                "getRules": (filterCtx, domDict, dom) => {
+                    if ( domDict.hasOwnProperty('checklist') ) {
+                        const selectedItems = domDict.checklist.items.getSelectedItems();
+                        if ( selectedItems.length > 0 ) {
+                            return selectedItems.map(item => {
+                                if ( item.key == '1' ) {
+                                    return {
+                                        "faturado": true,
+                                    };
+                                } else if ( item.key == '2' ) {
+                                    return {
+                                        "faturado": false,
+                                    };
+                                }
+                            });
+                        }
+                    }
+
+                    return [];
+                },
+                "createDom": (filterCtx, domDict) => {
+                    const container = document.createElement('div');
+                    container.id = 'checklistStatusFaturamentoContainer';
+                    document.body.appendChild(container);
+
+                    domDict.checklist = new HpvCheckList('checklistStatusFaturamentoContainer', {
+                        searchPlaceholder: "Buscar por...",
+                        selectMode: 'single', // 'single' or 'multiple'
+                        states: [0, 1],
+                        maxSelectableItems: 1,
+                        searchMode: 'local',
+                        fieldMap: {
+                            keyField: 'id',
+                            labelField: 'label',
+                            valueField: 'value',
+                        },
+                    });
+        
+                    const items = [
+                        { id: 1, label: 'Sim' },
+                        { id: 2, label: 'Não' },
+                    ];
+        
+                    domDict.checklist.addItems(items);
+                    
+                    return container;
+                }
             }),
         });
 
@@ -155,6 +278,11 @@
                     const opts = filterCtx.getSelector().options;
                     return `${opts.label}:&nbsp;<b>${opts.defaultText}</b>`;
                 },
+                "createDom": () => {
+                    const button = document.createElement('button');
+                    button.textContent = 'Selecionar Palavra';
+                    return button;
+                }
             }),
         });
 
@@ -172,7 +300,7 @@
                     const opts = filterCtx.getSelector().options;
                     return `${opts.label}:&nbsp;<b>${opts.defaultText}</b>`;
                 },
-                "getRules": (bar, filterCtx, dom) => {
+                "getRules": (filterCtx, domDict, dom) => {
                     if ( !dom ) {
                         return [{
                             "startAt": 1,
@@ -183,6 +311,11 @@
                     // TODO: extract from dom
                     return [];
                 },
+                "createDom": () => {
+                    const button = document.createElement('button');
+                    button.textContent = 'Selecionar Range';
+                    return button;
+                }
             }),
         });
 
@@ -200,6 +333,11 @@
                     const opts = filterCtx.getSelector().options;
                     return `${opts.label}:&nbsp;<b>${opts.defaultText}</b>`;
                 },
+                "createDom": () => {
+                    const button = document.createElement('button');
+                    button.textContent = 'Selecionar Serviço';
+                    return button;
+                }
             }),
         });
 
@@ -209,34 +347,6 @@
         filterBar.addFilter(wordFilter);
         filterBar.addFilter(dateRangeFilter);
         filterBar.addFilter(servicosFilter);
-
-        // filterBar.defineFilter({
-        //     "id": "dominio",
-        //     "label": "Domínio",
-        //     "faIcon": "fas fa-globe",
-        //     "immediateDisplay": true,
-        //     "onApplyFilter": (filter) => {
-        //         console.log("Carregando " + filter.id);
-
-        //         runOnDomReady(() => {
-        //             eventBus.emit('remoteListarDominio.start');
-        //         });
-        //     },
-        //     "onRemoveFilter": (filter) => {},
-        //     "uniqueInstance": true,
-        //     "selector": {
-        //         "label": "Domínio(s)",
-        //         "defaultText": "Todos",
-        //         "selectionMode": "multi-checkbox",
-        //         "onShowDropdown": () => {},
-        //         "onChangeSelector": () => {},
-        //         "filter": {
-        //             "mode": "remote",
-        //             "digits": 3
-        //         },
-        //         "remote": "",
-        //     },
-        // });
     </script>
 </body>
 </html>

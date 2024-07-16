@@ -75,22 +75,38 @@ const HpvFilterBar = {
                 const filterCtx = e.detail.filter;
                 console.log('Opening dropdown for filter ' + filterCtx.getId());
 
-                // 1. create floating div
-                const newNode = document.createElement('div');
-                newNode.classList.add(HpvFilterBar.CssClassName.FLOATING_CONTENT);
-                // 2. bind source element to floating div
-                const source = e.detail.target;
-                this.options.attachDropdown(source, newNode);
-                // 3. call filterCtx.getSelector().createDom() to get the dom element
-                const el = filterCtx.getSelector().createDom();
+                // 1. call filterCtx.getSelector().createDom() to get the dom element
+                const selector = filterCtx.getSelector();
+                const el = selector.createDom();
                 if (!el) return;
-                console.log(el);
-                // 4. add to floating div
-                newNode.appendChild(el);
-                // 5. add to dom
-                this.container.appendChild(newNode);
+
+                // get parent of el
+                const parent = el.parentNode;
+                let wrapperNode = null;
+
+                // if parent has class .floating-content
+                if (parent && parent.classList.contains(HpvFilterBar.CssClassName.FLOATING_CONTENT)) {
+                    // no need to create new node
+                    wrapperNode = parent;
+                } else {
+                    // create new node
+                    wrapperNode = document.createElement('div');
+                    wrapperNode.classList.add(HpvFilterBar.CssClassName.FLOATING_CONTENT);
+
+                    // 4. add to floating div
+                    wrapperNode.appendChild(el);
+                    // 5. add to dom
+                    this.container.appendChild(wrapperNode);
+
+                }
+
+                // 3. bind source element to floating div
+                const source = e.detail.target;
+                this.options.attachDropdown(source, wrapperNode);
+                
                 // 6. set dropdown visible
-                newNode.style.display = 'block';
+                wrapperNode.style.display = wrapperNode.style.display == 'block' ? 'none' : 'block';
+
                 // 7. do callback
             });
         }
@@ -125,11 +141,32 @@ const HpvFilterBar = {
         }
 
         getMergedRules() {
-            // call all filter with instances > 0 method getRules
-            return Array.from(this.filters.values())
+            const mergeObjects = function(array) {
+                const result = {};
+            
+                array.forEach(obj => {
+                    for (const key in obj) {
+                        if (result[key]) {
+                            if (!Array.isArray(result[key])) {
+                                result[key] = [result[key]];
+                            }
+                            result[key].push(obj[key]);
+                        } else {
+                            result[key] = obj[key];
+                        }
+                    }
+                });
+            
+                return result;
+            }
+
+            // call all filter with instances > 0 method getRules ( bar -> context -> selector )
+            return mergeObjects(
+                Array.from(this.filters.values())
                 .filter(f => f.instances > 0)
                 .map(f => f.getRules())
-                .reduce((acc, val) => acc.concat(val), []);
+                .reduce((acc, val) => acc.concat(val), [])
+            );
         }
     },
 
@@ -195,7 +232,7 @@ const HpvFilterBar = {
         getRules() {
             const selector = this.getSelector();
             if ( selector ) {
-                return selector.getRules(this, selector.dom);
+                return selector.getRules(this);
             }
 
             return {};
@@ -360,18 +397,19 @@ const HpvFilterBar = {
             };
             
             this.dom = null;
+            this.domDict = {};
         }
 
         createDom() {
             if (!this.dom && this.options.createDom) {
-                this.dom = this.options.createDom(this);
+                this.dom = this.options.createDom(this.filterCtx, this.domDict);
             }
             return this.dom;
         }
-        
-        getRules(filterCtx, dom) {
+
+        getRules(filterCtx) {
             if ( this.options.getRules ) {
-                return this.options.getRules(filterCtx, this.dom);
+                return this.options.getRules(filterCtx, this.domDict, this.dom);
             }
 
             return [];
