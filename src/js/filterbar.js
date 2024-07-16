@@ -87,8 +87,6 @@ const HpvFilterBar = {
                 const parent = el.parentNode;
                 let wrapperNode = null;
 
-                console.log(parent);
-
                 // if parent has class .floating-content
                 if (parent && parent.classList.contains(HpvFilterBar.CssClassName.FLOATING_CONTENT_BODY)) {
                     // no need to create new node
@@ -96,15 +94,29 @@ const HpvFilterBar = {
                 } else {
                     // create new node
                     wrapperNode = document.createElement('div');
-                    wrapperNode.classList.add(HpvFilterBar.CssClassName.FLOATING_CONTENT);
+                    wrapperNode.classList.add(HpvFilterBar.CssClassName.FLOATING_CONTENT, filterCtx.getId() + '-floating-content');
 
-                    // add html
-                    wrapperNode.innerHTML = `
-                        <div class="${HpvFilterBar.CssClassName.FLOATING_CONTENT_HEADER}">
-                            <strong>Filtros</strong>
-                            <div class="remove-filter"></div>
-                        </div>`;
+                    // -- Header
+                    const contentHeader = document.createElement('div');
+                    contentHeader.classList.add(HpvFilterBar.CssClassName.FLOATING_CONTENT_HEADER);
 
+                    const strong = document.createElement('strong');
+                    strong.innerHTML = 'Filtros';
+
+                    const removeFilter = document.createElement('div');
+                    removeFilter.classList.add('remove-filter');
+                    // on click
+                    removeFilter.addEventListener('click', () => {
+                        this.removeFilter(filterCtx.getId());
+                        wrapperNode.style.display = wrapperNode.style.display == 'block' ? 'none' : 'block';
+                    });
+
+                    contentHeader.appendChild(strong);
+                    contentHeader.appendChild(removeFilter);
+
+                    wrapperNode.appendChild(contentHeader);
+
+                    // -- Body
                     const contentBody = document.createElement('div');
                     contentBody.classList.add(HpvFilterBar.CssClassName.FLOATING_CONTENT_BODY);
                     
@@ -138,7 +150,7 @@ const HpvFilterBar = {
             const filter = this.filters.get(filterId);
             if (filter) {
                 filter.removeFromScreen();
-                this.filters.delete(filterId);
+                // TODO: delete floating element will kill context state, do we really need ?
             }
         }
 
@@ -241,7 +253,7 @@ const HpvFilterBar = {
 
         removeFromScreen() {
             console.log(`Removing filter ${this.options.id} from screen`);
-            const filterSelectorBtn = document.getElementById(this.options.id + '-selector-btn');
+            const filterSelectorBtn = document.getElementById(this.options.id + '-selector-btn-0');
             filterSelectorBtn.remove();
 
             this.instances--;
