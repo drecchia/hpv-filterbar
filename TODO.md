@@ -1,6 +1,7 @@
 TODO:
 -----
 Improove callbacks
+Support multiples Instances
 
 BUGS:
 -----
