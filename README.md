@@ -1,14 +1,14 @@
 # HPV-CHECKLIST
-######  _Hyper Parametrizable Vanilla Checklist_
+######  _Hyper Parametrizable Vanilla FilterBar_
 
 ---
 
-Design to offer flexibility across all environments with no dependecies. Hpv-Checklist is a _First Class_ solution for webapps checkbox lists. Unlike other options, it is not tied to a select or floating UI. It is very small (~8Kb) and customizable through a wide range of options.
+Designed to offer flexibility across all environments with no dependecies. Hpv-FilterBar is a _First Class_ solution for webapps mass content filtering. Unlike other options, it is not tied to any css frameworks. It is very small (~8Kb) and customizable through a wide range of options.
 
 
 [Online Demo](https://jsfiddle.net/yje571g9/2/)
 
-Need extra help? Have a look at [the examples](https://github.com/drecchia/hpv-checklist/tree/master/examples) folder. Fill an [issue](https://github.com/drecchia/hpv-checklist/issues) if necessary.<br />
+Need extra help? Have a look at [the examples](https://github.com/drecchia/hpv-filterbar/tree/master/examples) folder. Fill an [issue](https://github.com/drecchia/hpv-filterbar/issues) if necessary.<br />
 
 ---
 
@@ -45,22 +45,22 @@ Need extra help? Have a look at [the examples](https://github.com/drecchia/hpv-c
 
 This package can be installed with:
 
-- [npm](https://www.npmjs.com/package/hpv-checklist): `npm install --save hpv-checklist`
+- [npm](https://www.npmjs.com/package/hpv-filterbar): `npm install --save hpv-filterbar`
 
-Or download the [latest release](https://github.com/drecchia/hpv-checklist/dist).
+Or download the [latest release](https://github.com/drecchia/hpv-filterbar/dist).
 
 ### CDN
 
-- [jsdeliver](https://www.jsdelivr.com/package/npm/hpv-checklist)
+- [jsdeliver](https://www.jsdelivr.com/package/npm/hpv-filterbar)
 
 
 ### Including Hpvm Menu
 
 #### Script and Css tag
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hpv-checklist@1.0.0/dist/css/all.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hpv-filterbar@1.0.0/dist/css/all.css">
 
-<script src="https://cdn.jsdelivr.net/npm/hpv-checklist@1.0.0/dist/js/all.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/hpv-filterbar@1.0.0/dist/js/all.min.js"></script>
 ```
 
 ## Usage
@@ -236,7 +236,7 @@ checklist1.items.getVisibleItems()
 
 ### Licence
 
-The hpv-checklist code is licensed under the [Apache-2.0 licence](https://raw.githubusercontent.com/drecchia/hpv-checklist/master/LICENSE).<br />
+The hpv-filterbar code is licensed under the [Apache-2.0 licence](https://raw.githubusercontent.com/drecchia/hpv-filterbar/master/LICENSE).<br />
 
 
 ### Similar projects:
