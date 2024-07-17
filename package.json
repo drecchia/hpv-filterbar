@@ -1,6 +1,6 @@
 {
     "name": "hpv-filterbar",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "author": "Danilo T Recchia",
     "main": "dist/js/all.min.js",
     "license": "CC-BY-NC-4.0",
