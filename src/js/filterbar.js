@@ -162,6 +162,7 @@ const HpvFilterBar = {
             
             const filterPicker = filter.getPicker();
             filterPicker.setContext(filter);
+
             this.pickerBtn.addPicker(filterPicker);
 
             const filterSelector = filter.getSelector();
@@ -320,7 +321,8 @@ const HpvFilterBar = {
         }
 
         setupFloatingContent() {
-            const attachFn = this.options.attachDropdown;
+            const { pickerContentTitle, attachDropdown: attachFn } = this.options;
+
             if (typeof attachFn === 'function') {
                 // create a new div on document root
                 const newNode = document.createElement('div');
@@ -328,7 +330,7 @@ const HpvFilterBar = {
                 // add html
                 newNode.innerHTML = `
                         <div class="${HpvFilterBar.CssClassName.FLOATING_CONTENT_HEADER}">
-                            <strong>Filtros</strong>
+                            <strong>${pickerContentTitle ? pickerContentTitle : 'Filters'}</strong>
                         </div>
                         <div class="${HpvFilterBar.CssClassName.FLOATING_CONTENT_BODY}">
                         </div>`;
