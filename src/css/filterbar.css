@@ -56,14 +56,14 @@
     align-items: baseline;
 }
 
-.hpv-filter-bar .floating-content .floating-content-header .remove-filter::before {
+.hpv-filter-bar .floating-content .floating-content-header .remove-selector::before {
     content: "✖";
 }
-.hpv-filter-bar .floating-content .floating-content-header .remove-filter:hover {
+.hpv-filter-bar .floating-content .floating-content-header .remove-selector:hover {
     background-color: #ff9999;
     color: black;
 }
-.hpv-filter-bar .floating-content .floating-content-header .remove-filter {
+.hpv-filter-bar .floating-content .floating-content-header .remove-selector {
     background-color: #b7b7b7;
     color: white;
     border-radius: 2px;

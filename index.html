@@ -78,7 +78,7 @@
         const filterBar = new HpvFilterBar.Bar('myFilterBar', {
             pickerBtnTitle: 'Selecionar filtros',
             pickerContentTitle: 'Filtros',
-            onToggleDropdown: (source, content) => {
+            afterToggleDropdown: (source, content) => {
                 console.log("Toggling dropdown...");
                 computFloatingPosition(source, content);
             },
@@ -86,6 +86,9 @@
                 console.log("Attaching dropdown...");
                 computFloatingPosition(source, content);
             },
+            afterCreate: (bar) => {
+                console.log("Filter bar created!");
+            }
         });
 
         const domainFilter = new HpvFilterBar.Context({
@@ -146,6 +149,7 @@
                     document.body.appendChild(container);
 
                     const recalculateLabel = (checkList) => {
+                        filterCtx.immediateUpdateLabel();
                     };
 
                     domDict.checklist = new HpvCheckList('checklistDomainContainer', {
