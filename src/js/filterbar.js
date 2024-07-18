@@ -46,10 +46,10 @@ const HpvFilterBar = {
             // bubble events
             this.setupEventListeners();
             // fire created callback
-            this.callbackCreatedEvent();
+            this.doCallbackCreatedEvent();
         }
 
-        callbackCreatedEvent() {
+        doCallbackCreatedEvent() {
             if ( this.options.afterCreated && this.options.afterCreated instanceof Function ) {
                 this.options.afterCreated(this);
             }
@@ -64,7 +64,7 @@ const HpvFilterBar = {
                 const selector = filterCtx.getSelector();
 
                 if (filterCtx.reachedInstancesLimit()) {
-                    console.log('Max instances reached for filter ' + filterCtx.getId());
+                    console.error('Max instances reached for filter ' + filterCtx.getId());
                     return;
                 }
 
@@ -196,11 +196,15 @@ const HpvFilterBar = {
         }
 
         getAllRules() {
-            // call all filter with instances > 0 method getRules ( bar -> context -> selector )
-            return Array.from(this.filters.values())
-                .filter(f => f.instances > 0)
-                .map(f => f.getRules())
-                .reduce((acc, val) => acc.concat(val), []);
+            // call all filter with instances > 0 method getRules ( bar -> context -> selector ) and return an array of arrays
+            let rules = [];
+            this.filters.forEach((filterCtx) => {
+                if (filterCtx.instances > 0) {
+                    rules.push(filterCtx.getRules());
+                }
+            });
+            
+            return rules;
         }
     },
 
@@ -257,6 +261,7 @@ const HpvFilterBar = {
             }
         }
 
+        // FIXME: context is not removed, selectors are
         removeFromScreen() {
             console.log(`Removing filter ${this.options.id} from screen`);
             const filterSelectorBtn = document.getElementById(this.options.id + '-selector-btn-0');
@@ -264,10 +269,14 @@ const HpvFilterBar = {
 
             this.instances--;
 
+            this.processMaxInstances();
+            this.doCallbackAfterRemoveFromBar();
+        }
+
+        doCallbackAfterRemoveFromBar() {
             if (this.options.afterRemoveFromBar) {
                 this.options.afterRemoveFromBar(this.parent, this);
             }
-            this.processMaxInstances();
         }
 
         getRules() {
@@ -431,6 +440,8 @@ const HpvFilterBar = {
                 disabledSelector: false,
                 onShowDropdown: () => {},
                 onHideDropdown: () => {},
+                beforeAddToScreen: (filterCtx, domDict, dom) => {},
+                afterAddToScreen: (filterCtx, domDict, dom) => {},
                 createDom: (filterCtx) => {},
                 getRules: (filterCtx, dom) => { return [] },
                 ...opts
@@ -438,6 +449,18 @@ const HpvFilterBar = {
             
             this.dom = null;
             this.domDict = {};
+        }
+
+        doCallbackAfterAddToScreen(filterCtx) {
+            if ( this.options.afterAddToScreen && this.options.afterAddToScreen instanceof Function ) {
+                this.options.afterAddToScreen(filterCtx, this.domDict, this.dom);
+            }
+        }
+
+        doCallbackBeforeAddToScreen(filterCtx) {
+            if ( this.options.beforeAddToScreen && this.options.beforeAddToScreen instanceof Function ) {
+                this.options.beforeAddToScreen(filterCtx, this.domDict, this.dom);
+            }
         }
 
         createDom() {
@@ -476,6 +499,8 @@ const HpvFilterBar = {
 
         // fire the action to add filter to filterBar
         addToScreen() {
+            this.doCallbackBeforeAddToScreen(this.filterCtx);
+
             const contextId = this.filterCtx.getId();
             // Add selector to filterBar, so user can see it and interact with it
             console.log(`Adding selector ${contextId} to screen`);
@@ -523,6 +548,8 @@ const HpvFilterBar = {
                     }));
                 });
             }
-        }
-    }
+
+            this.doCallbackAfterAddToScreen(this.filterCtx);
+        } // addToScreen
+    } // Selector
 };
