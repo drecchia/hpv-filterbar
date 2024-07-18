@@ -25,7 +25,9 @@ const HpvFilterBar = {
             this.options = {
                 pickerBtnTitle: 'Select filter',
                 attachDropdown: (source, target) => {},
-                onToggleDropdown: (source, target) => {},
+                afterToggleDropdown: (source, target) => {},
+                afterCreated: (bar) => {},
+                afterRemoveSelector: (bar, filterCtx) => {},
                 ...opts
             };
 
@@ -43,6 +45,14 @@ const HpvFilterBar = {
             this.pickerBtn = new HpvFilterBar.PickerBtn(this);
             // bubble events
             this.setupEventListeners();
+            // fire created callback
+            this.doCallbackCreatedEvent();
+        }
+
+        doCallbackCreatedEvent() {
+            if ( this.options.afterCreated && this.options.afterCreated instanceof Function ) {
+                this.options.afterCreated(this);
+            }
         }
 
         setupEventListeners() {
@@ -54,7 +64,7 @@ const HpvFilterBar = {
                 const selector = filterCtx.getSelector();
 
                 if (filterCtx.reachedInstancesLimit()) {
-                    console.log('Max instances reached for filter ' + filterCtx.getId());
+                    console.error('Max instances reached for filter ' + filterCtx.getId());
                     return;
                 }
 
@@ -103,16 +113,16 @@ const HpvFilterBar = {
                     const strong = document.createElement('strong');
                     strong.innerHTML = 'Filtros';
 
-                    const removeFilter = document.createElement('div');
-                    removeFilter.classList.add('remove-filter');
+                    const removeSelectorEl = document.createElement('div');
+                    removeSelectorEl.classList.add('remove-selector');
                     // on click
-                    removeFilter.addEventListener('click', () => {
-                        this.removeFilter(filterCtx.getId());
+                    removeSelectorEl.addEventListener('click', () => {
+                        this.removeSelector(filterCtx.getId());
                         wrapperNode.style.display = wrapperNode.style.display == 'block' ? 'none' : 'block';
                     });
 
                     contentHeader.appendChild(strong);
-                    contentHeader.appendChild(removeFilter);
+                    contentHeader.appendChild(removeSelectorEl);
 
                     wrapperNode.appendChild(contentHeader);
 
@@ -146,63 +156,55 @@ const HpvFilterBar = {
             });
         }
 
-        removeFilter(filterId) {
-            const filter = this.filters.get(filterId);
-            if (filter) {
-                filter.removeFromScreen();
+        // TODO: this mode wont support multiples instances
+        removeSelector(filterId) {
+            const filterCtx = this.filters.get(filterId);
+            if (filterCtx) {
+                filterCtx.removeFromScreen();
                 // TODO: delete floating element will kill context state, do we really need ?
+
+                if ( this.options.afterRemoveSelector && this.options.afterRemoveSelector instanceof Function ) {
+                    this.options.afterRemoveSelector(this, filterCtx);
+                }
             }
         }
 
-        addFilter(filter) {
+        addFilter(filterCtx) {
             // set parent reference
-            filter.setBar(this);
+            filterCtx.setBar(this);
             // add to filters map
-            this.filters.set(filter.getId(), filter);
+            this.filters.set(filterCtx.getId(), filterCtx);
             
-            const filterPicker = filter.getPicker();
-            filterPicker.setContext(filter);
+            const filterPicker = filterCtx.getPicker();
+            filterPicker.setContext(filterCtx);
 
             this.pickerBtn.addPicker(filterPicker);
 
-            const filterSelector = filter.getSelector();
-            filterSelector.setContext(filter);
+            const filterSelector = filterCtx.getSelector();
+            filterSelector.setContext(filterCtx);
 
             if (filterSelector.options.immediateDisplay) {
                 filterSelector.addToScreen();
 
-                filter.instances++;
-                filter.processMaxInstances();
+                filterCtx.instances++;
+                filterCtx.processMaxInstances();
+            }
+
+            if ( this.options.onFilterAdded && this.options.onFilterAdded instanceof Function ) {
+                this.options.onFilterAdded(this, filterCtx);
             }
         }
 
-        getMergedRules() {
-            const mergeObjects = function(array) {
-                const result = {};
+        getAllRules() {
+            // call all filter with instances > 0 method getRules ( bar -> context -> selector ) and return an array of arrays
+            let rules = [];
+            this.filters.forEach((filterCtx) => {
+                if (filterCtx.instances > 0) {
+                    rules.push(filterCtx.getRules());
+                }
+            });
             
-                array.forEach(obj => {
-                    for (const key in obj) {
-                        if (result[key]) {
-                            if (!Array.isArray(result[key])) {
-                                result[key] = [result[key]];
-                            }
-                            result[key].push(obj[key]);
-                        } else {
-                            result[key] = obj[key];
-                        }
-                    }
-                });
-            
-                return result;
-            }
-
-            // call all filter with instances > 0 method getRules ( bar -> context -> selector )
-            return mergeObjects(
-                Array.from(this.filters.values())
-                .filter(f => f.instances > 0)
-                .map(f => f.getRules())
-                .reduce((acc, val) => acc.concat(val), [])
-            );
+            return rules;
         }
     },
 
@@ -212,6 +214,7 @@ const HpvFilterBar = {
             this.options = {
                 picker: new HpvFilterBar.ItemPicker(),
                 selector: new HpvFilterBar.Selector(),
+                afterRemoveFromBar: (bar, filterCtx) => {},
                 maxInstances: 1,
                 ...opts
             };
@@ -235,6 +238,12 @@ const HpvFilterBar = {
             return this.instances >= this.options.maxInstances;
         }
 
+        immediateUpdateLabel() {
+            // FIXME: do it only on current selector instance
+            const selector = this.getSelector();
+            selector.updateLabel();
+        }
+
         setBar(parent) {
             if (!(parent instanceof HpvFilterBar.Bar)) {
                 throw new Error('Parent must be an instance of HpvFilterBar.Bar');
@@ -252,6 +261,7 @@ const HpvFilterBar = {
             }
         }
 
+        // FIXME: context is not removed, selectors are
         removeFromScreen() {
             console.log(`Removing filter ${this.options.id} from screen`);
             const filterSelectorBtn = document.getElementById(this.options.id + '-selector-btn-0');
@@ -259,10 +269,14 @@ const HpvFilterBar = {
 
             this.instances--;
 
-            if (this.options.onRemoveFromBar) {
-                this.options.onRemoveFromBar(this.parent, this);
-            }
             this.processMaxInstances();
+            this.doCallbackAfterRemoveFromBar();
+        }
+
+        doCallbackAfterRemoveFromBar() {
+            if (this.options.afterRemoveFromBar) {
+                this.options.afterRemoveFromBar(this.parent, this);
+            }
         }
 
         getRules() {
@@ -361,9 +375,9 @@ const HpvFilterBar = {
             const ddContent = document.querySelector('.' + HpvFilterBar.CssClassName.PICKER_FLOATING_CONTENT);
             ddContent.style.display = ddContent.style.display == 'block' ? 'none' : 'block';
 
-            if (this.options.onToggleDropdown) {
+            if (this.options.afterToggleDropdown) {
                 const source = document.querySelector('.' + HpvFilterBar.CssClassName.PICKER_BTN);
-                this.options.onToggleDropdown(source, ddContent);
+                this.options.afterToggleDropdown(source, ddContent);
             }
         }
     },
@@ -426,6 +440,8 @@ const HpvFilterBar = {
                 disabledSelector: false,
                 onShowDropdown: () => {},
                 onHideDropdown: () => {},
+                beforeAddToScreen: (filterCtx, domDict, dom) => {},
+                afterAddToScreen: (filterCtx, domDict, dom) => {},
                 createDom: (filterCtx) => {},
                 getRules: (filterCtx, dom) => { return [] },
                 ...opts
@@ -433,6 +449,18 @@ const HpvFilterBar = {
             
             this.dom = null;
             this.domDict = {};
+        }
+
+        doCallbackAfterAddToScreen(filterCtx) {
+            if ( this.options.afterAddToScreen && this.options.afterAddToScreen instanceof Function ) {
+                this.options.afterAddToScreen(filterCtx, this.domDict, this.dom);
+            }
+        }
+
+        doCallbackBeforeAddToScreen(filterCtx) {
+            if ( this.options.beforeAddToScreen && this.options.beforeAddToScreen instanceof Function ) {
+                this.options.beforeAddToScreen(filterCtx, this.domDict, this.dom);
+            }
         }
 
         createDom() {
@@ -471,6 +499,8 @@ const HpvFilterBar = {
 
         // fire the action to add filter to filterBar
         addToScreen() {
+            this.doCallbackBeforeAddToScreen(this.filterCtx);
+
             const contextId = this.filterCtx.getId();
             // Add selector to filterBar, so user can see it and interact with it
             console.log(`Adding selector ${contextId} to screen`);
@@ -518,6 +548,8 @@ const HpvFilterBar = {
                     }));
                 });
             }
-        }
-    }
+
+            this.doCallbackAfterAddToScreen(this.filterCtx);
+        } // addToScreen
+    } // Selector
 };
