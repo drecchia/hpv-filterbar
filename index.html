@@ -86,7 +86,7 @@
                 console.log("Attaching dropdown...");
                 computFloatingPosition(source, content);
             },
-            afterCreate: (bar) => {
+            afterCreated: (bar) => {
                 console.log("Filter bar created!");
             }
         });
@@ -107,7 +107,7 @@
                 "onOpenDropdown": () => {},
                 "onCloseDropdown": () => {},
                 "onAddToBar": () => {},
-                "onRemoveFromBar": () => {},
+                "afterRemoveFromBar": () => {},
 
                 "constructHtmlLabel": (filterCtx, domDict, dom) => {
                     const opts = filterCtx.getSelector().options;
@@ -269,13 +269,13 @@
                         if ( selectedItems.length > 0 ) {
                             return selectedItems.map(item => {
                                 if ( item.key == '1' ) {
-                                    return {
+                                    return [{
                                         "faturado": true,
-                                    };
+                                    }];
                                 } else if ( item.key == '2' ) {
-                                    return {
+                                    return [{
                                         "faturado": false,
-                                    };
+                                    }];
                                 }
                             });
                         }
