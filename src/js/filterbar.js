@@ -90,9 +90,9 @@ const HpvFilterBar = {
                 const filterCtx = e.detail.filter;
                 console.log('Opening dropdown for filter ' + filterCtx.getId());
 
-                // 1. call filterCtx.getSelector().createDom() to get the dom element
+                // 1. call filterCtx.getSelector().constructSelectorFloatingContent() to get the dom element
                 const selector = filterCtx.getSelector();
-                const el = selector.createDom();
+                const el = selector.constructSelectorFloatingContent();
                 if (!el) return;
 
                 // get parent of el
@@ -113,18 +113,22 @@ const HpvFilterBar = {
                     contentHeader.classList.add(HpvFilterBar.CssClassName.FLOATING_CONTENT_HEADER);
 
                     const strong = document.createElement('strong');
-                    strong.innerHTML = 'Filtros';
-
-                    const removeSelectorEl = document.createElement('div');
-                    removeSelectorEl.classList.add('remove-selector');
-                    // on click
-                    removeSelectorEl.addEventListener('click', () => {
-                        this.removeSelector(filterCtx.getId());
-                        wrapperNode.style.display = wrapperNode.style.display == 'block' ? 'none' : 'block';
-                    });
+                    strong.innerHTML = selector.options.floatingContentTitle || 'Filtros';
 
                     contentHeader.appendChild(strong);
-                    contentHeader.appendChild(removeSelectorEl);
+
+                    if ( selector.options.removable ) {
+                        const removeSelectorEl = document.createElement('div');
+                        removeSelectorEl.classList.add('remove-selector');
+                        // on click
+                        removeSelectorEl.addEventListener('click', () => {
+                            this.removeSelector(filterCtx.getId());
+                            wrapperNode.style.display = wrapperNode.style.display == 'block' ? 'none' : 'block';
+                        });
+
+                        // add to header
+                        contentHeader.appendChild(removeSelectorEl);
+                    }
 
                     wrapperNode.appendChild(contentHeader);
 
@@ -226,8 +230,8 @@ const HpvFilterBar = {
     Context: class {
         constructor(opts = {}) {
             this.options = {
-                picker: new HpvFilterBar.ItemPicker(),
-                selector: new HpvFilterBar.Selector(),
+                picker: null,
+                selector: null,
                 afterRemoveFromBar: (bar, filterCtx) => {},
                 maxInstances: 1,
                 ...opts
@@ -450,13 +454,15 @@ const HpvFilterBar = {
             this.options = {
                 label: 'Selected',
                 defaultText: 'All',
+                floatingContentTitle: 'Filters',
                 immediateDisplay: false,
                 disabledSelector: false,
+                removable: true,
                 onShowDropdown: () => {},
                 onHideDropdown: () => {},
                 beforeAddToScreen: (filterCtx, domDict, dom) => {},
                 afterAddToScreen: (filterCtx, domDict, dom) => {},
-                createDom: (filterCtx) => {},
+                constructSelectorFloatingContent: (filterCtx) => {},
                 getRules: (filterCtx, dom) => { return [] },
                 ...opts
             };
@@ -477,9 +483,9 @@ const HpvFilterBar = {
             }
         }
 
-        createDom() {
-            if (!this.dom && this.options.createDom) {
-                this.dom = this.options.createDom(this.filterCtx, this.domDict);
+        constructSelectorFloatingContent() {
+            if (!this.dom && this.options.constructSelectorFloatingContent) {
+                this.dom = this.options.constructSelectorFloatingContent(this.filterCtx, this.domDict);
             }
             return this.dom;
         }
@@ -504,8 +510,16 @@ const HpvFilterBar = {
             const filterSelectorBtn = document.getElementById(this.filterCtx.getId() + '-selector-btn-0');
             const filterSelectorText = filterSelectorBtn.querySelector('.' + HpvFilterBar.CssClassName.SELECTOR_BTN_TEXT);
 
-            if ( this.options.constructHtmlLabel && this.options.constructHtmlLabel instanceof Function ) {
-                filterSelectorText.innerHTML = this.options.constructHtmlLabel(this.filterCtx, this.domDict, this.dom);
+            if ( this.options.constructSelectorContent && this.options.constructSelectorContent instanceof Function ) {
+                const content = this.options.constructSelectorContent(this.filterCtx, this.domDict, this.dom);
+                // if content is element
+                if (content instanceof HTMLElement) {
+                    // remove any childs 
+                    filterSelectorText.innerHTML = '';
+                    filterSelectorText.appendChild(content);
+                } else {
+                    console.error('Content must be an instance of HTMLElement');
+                }
             } else {
                 filterSelectorText.innerHTML = this.options.label;
             }
@@ -526,8 +540,15 @@ const HpvFilterBar = {
             const filterSelectorText = document.createElement('span');
             filterSelectorText.classList.add(HpvFilterBar.CssClassName.SELECTOR_BTN_TEXT);
 
-            if ( this.options.constructHtmlLabel && this.options.constructHtmlLabel instanceof Function ) {
-                filterSelectorText.innerHTML = this.options.constructHtmlLabel(this.filterCtx, this.domDict, this.dom);
+            if ( this.options.constructSelectorContent && this.options.constructSelectorContent instanceof Function ) {
+                const content = this.options.constructSelectorContent(this.filterCtx, this.domDict, this.dom);
+                // if content is element
+                if (content instanceof HTMLElement) {
+                    // remove any childs 
+                    filterSelectorText.appendChild(content);
+                } else {
+                    console.error('Content must be an instance of HTMLElement');
+                }
             } else {
                 filterSelectorText.innerHTML = this.options.label;
             }

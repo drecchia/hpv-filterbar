@@ -101,6 +101,8 @@
             "selector": new HpvFilterBar.Selector({
                 "label": "Domínio(s)",
                 "defaultText": "Todos",
+                "floatingContentTitle": "Selecione o(s) domínio(s)",
+                "removable": false,
                 "immediateDisplay": false,
                 "disabledSelector": false,
                 
@@ -109,7 +111,7 @@
                 "onAddToBar": () => {},
                 "afterRemoveFromBar": () => {},
 
-                "constructHtmlLabel": (filterCtx, domDict, dom) => {
+                "constructSelectorContent": (filterCtx, domDict, dom) => {
                     const opts = filterCtx.getSelector().options;
                     let selectedLabels = null;
 
@@ -124,8 +126,11 @@
                             }
                         }
                     }
+
+                    const div = document.createElement('div');
+                    div.innerHTML = `${opts.label}:&nbsp;<b>${selectedLabels ? selectedLabels : opts.defaultText}</b>`;
                     
-                    return `${opts.label}:&nbsp;<b>${selectedLabels ? selectedLabels : opts.defaultText}</b>`;
+                    return div;
                 },
 
                 "getRules": (filterCtx, domDict, dom) => {
@@ -143,7 +148,7 @@
                     return [];
                 },
 
-                "createDom": (filterCtx, domDict) => {
+                "constructSelectorFloatingContent": (filterCtx, domDict) => {
                     const container = document.createElement('div');
                     container.id = 'checklistDomainContainer';
                     document.body.appendChild(container);
@@ -208,7 +213,7 @@
         const statusOsFilter = new HpvFilterBar.Context({
             "id": "tipo-status-os",
             "maxInstances": 1,
-            "picker": new HpvFilterBar.ItemPicker({
+            "noPicker": new HpvFilterBar.ItemPicker({
                 "label": "Status",
                 "faIcon": "fas fa-check-circle",
             }),
@@ -217,17 +222,20 @@
                 "defaultText": "Todos",
                 "disabledSelector": true,
                 "immediateDisplay": true,
-                "createDom": () => {}, // no need to create a DOM element
-                "constructHtmlLabel": (filterCtx, domDict, dom) => {
+                "constructSelectorContent": (filterCtx, domDict, dom) => {
                     const opts = filterCtx.getSelector().options;
-                    return `${opts.label}:&nbsp;<b>${opts.defaultText}</b>`;
+
+                    const div = document.createElement('div');
+                    div.innerHTML = `${opts.label}:&nbsp;<b>${opts.defaultText}</b>`;
+
+                    return div;
                 },
                 "getRules": (filterCtx, domDict, dom) => {
                     return [{
                         "idStatusServico": "027yIAt4HGYZki1WZh03F",
                     }];
                 },
-                "createDom": () => {
+                "constructSelectorFloatingContent": () => {
                     const button = document.createElement('button');
                     button.textContent = 'Selecionar Status';
                     return button;
@@ -245,7 +253,7 @@
             "selector": new HpvFilterBar.Selector({
                 "label": "Faturado",
                 "defaultText": "Todas",
-                "constructHtmlLabel": (filterCtx, domDict, dom) => {
+                "constructSelectorContent": (filterCtx, domDict, dom) => {
                     const opts = filterCtx.getSelector().options;
                     let selectedLabels = null;
 
@@ -260,8 +268,11 @@
                             }
                         }
                     }
+
+                    const div = document.createElement('div');
+                    div.innerHTML = `${opts.label}:&nbsp;<b>${selectedLabels ? selectedLabels : opts.defaultText}</b>`;
                     
-                    return `${opts.label}:&nbsp;<b>${selectedLabels ? selectedLabels : opts.defaultText}</b>`;
+                    return div;
                 },
                 "getRules": (filterCtx, domDict, dom) => {
                     if ( domDict.hasOwnProperty('checklist') ) {
@@ -283,7 +294,7 @@
 
                     return [];
                 },
-                "createDom": (filterCtx, domDict) => {
+                "constructSelectorFloatingContent": (filterCtx, domDict) => {
                     const container = document.createElement('div');
                     container.id = 'checklistStatusFaturamentoContainer';
                     document.body.appendChild(container);
@@ -323,20 +334,23 @@
             "selector": new HpvFilterBar.Selector({
                 "label": "Palavra",
                 "defaultText": "Todas",
-                "constructHtmlLabel": (filterCtx, domDict, dom) => {
+                "constructSelectorContent": (filterCtx, domDict, dom) => {
                     const opts = filterCtx.getSelector().options;
-                    const defaultValue = `${opts.label}:&nbsp;<b>${opts.defaultText}</b>`;
+
+                    const div = document.createElement('div');
+                    div.innerHTML = `${opts.label}:&nbsp;<b>${opts.defaultText}</b>`;
 
                     if ( !dom ) {
-                        return defaultValue;
+                        return div;
                     } else if ( dom ) {
                         const value = dom.querySelector('input').value;
                         
                         if ( value.length == 0 ) {
-                            return defaultValue;
+                            return div;
                         }
 
-                        return `${opts.label}:&nbsp;<b>${value}</b>`;
+                        div.innerHTML = `${opts.label}:&nbsp;<b>${value}</b>`;
+                        return div;
                     }
                 },
                 "getRules": (filterCtx, domDict, dom) => {
@@ -351,7 +365,7 @@
                         'word': dom.querySelector('input').value,
                     }];
                 },
-                "createDom": () => {
+                "constructSelectorFloatingContent": () => {
                     const input = document.createElement('input');
                     input.type = 'text';
                     input.placeholder = 'Digite uma palavra';
@@ -375,9 +389,13 @@
             "selector": new HpvFilterBar.Selector({
                 "label": "Data Conclusão",
                 "defaultText": "Ult. 30 dias",
-                "constructHtmlLabel": (filterCtx, domDict, dom) => {
+                "constructSelectorContent": (filterCtx, domDict, dom) => {
                     const opts = filterCtx.getSelector().options;
-                    return `${opts.label}:&nbsp;<b>${opts.defaultText}</b>`;
+
+                    const div = document.createElement('div');
+                    div.innerHTML = `${opts.label}:&nbsp;<b>${opts.defaultText}</b>`;
+                    
+                    return div;
                 },
                 "getRules": (filterCtx, domDict, dom) => {
                     if ( !dom ) {
@@ -390,7 +408,7 @@
                     // TODO: extract from dom
                     return [];
                 },
-                "createDom": () => {
+                "constructSelectorFloatingContent": () => {
                     const button = document.createElement('button');
                     button.textContent = 'Selecionar Range';
                     return button;
@@ -408,11 +426,15 @@
             "selector": new HpvFilterBar.Selector({
                 "label": "Serviço(s)",
                 "defaultText": "Todos",
-                "constructHtmlLabel": (filterCtx, domDict, dom) => {
+                "constructSelectorContent": (filterCtx, domDict, dom) => {
                     const opts = filterCtx.getSelector().options;
-                    return `${opts.label}:&nbsp;<b>${opts.defaultText}</b>`;
+                    
+                    const div = document.createElement('div');
+                    div.innerHTML = `${opts.label}:&nbsp;<b>${opts.defaultText}</b>`;
+
+                    return div;
                 },
-                "createDom": () => {
+                "constructSelectorFloatingContent": () => {
                     const button = document.createElement('button');
                     button.textContent = 'Selecionar Serviço';
                     return button;
