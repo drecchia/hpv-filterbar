@@ -28,6 +28,8 @@ const HpvFilterBar = {
                 afterToggleDropdown: (source, target) => {},
                 afterCreated: (bar) => {},
                 afterRemoveSelector: (bar, filterCtx) => {},
+                onFilterAdded: (bar, filterCtx) => {},
+                onFiltersAdded: (bar, filters) => {},
                 ...opts
             };
 
@@ -169,6 +171,16 @@ const HpvFilterBar = {
             }
         }
 
+        addFilters(filters) {
+            filters.forEach((filterCtx) => {
+                this.addFilter(filterCtx);
+            });
+
+            if ( this.options.onFiltersAdded && this.options.onFiltersAdded instanceof Function ) {
+                this.options.onFiltersAdded(this, filters);
+            }
+        }
+
         addFilter(filterCtx) {
             // set parent reference
             filterCtx.setBar(this);
@@ -176,9 +188,11 @@ const HpvFilterBar = {
             this.filters.set(filterCtx.getId(), filterCtx);
             
             const filterPicker = filterCtx.getPicker();
-            filterPicker.setContext(filterCtx);
 
-            this.pickerBtn.addPicker(filterPicker);
+            if ( filterPicker ) {
+                filterPicker.setContext(filterCtx);
+                this.pickerBtn.addPicker(filterPicker);
+            }
 
             const filterSelector = filterCtx.getSelector();
             filterSelector.setContext(filterCtx);
