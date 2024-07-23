@@ -52,6 +52,25 @@ const HpvFilterBar = {
             this.doCallbackCreatedEvent();
         }
 
+        sortVisibleElementsByRank() {
+            const parent = this.container;
+        
+            // Get all visible child elements
+            const childrenArray = Array.from(parent.children).filter(child => {
+                return child.style.display !== 'none';
+            });
+        
+            // Sort the children by data-rank, treating elements without data-rank as having a rank of 1
+            childrenArray.sort((a, b) => {
+                const rankA = parseInt(a.getAttribute('data-rank')) || 1;
+                const rankB = parseInt(b.getAttribute('data-rank')) || 1;
+                return rankA - rankB;
+            });
+        
+            // Append sorted elements back to the parent element
+            childrenArray.forEach(child => parent.appendChild(child));
+        }        
+
         doCallbackCreatedEvent() {
             if ( this.options.afterCreated && this.options.afterCreated instanceof Function ) {
                 this.options.afterCreated(this);
@@ -77,6 +96,9 @@ const HpvFilterBar = {
 
                 // hide dropdown
                 this.pickerBtn.toggleFloatingContentVisibility();
+
+                // sort elements by rank
+                this.sortVisibleElementsByRank();
 
                 // we have added last possible item
                 if (filterCtx.reachedInstancesLimit()) {
@@ -338,6 +360,7 @@ const HpvFilterBar = {
             const pickerTrigger = this.options.createPickerEl(this.options);
             // enforce control properties
             pickerTrigger.classList.add(HpvFilterBar.CssClassName.PICKER_BTN, HpvFilterBar.CssClassName.ICON_BTN);
+            pickerTrigger.setAttribute('data-rank', 100);
             pickerTrigger.addEventListener('click', this.toggleFloatingContentVisibility.bind(this));
 
             this.parent.container.appendChild(pickerTrigger);
@@ -459,6 +482,7 @@ const HpvFilterBar = {
                 immediateDisplay: false,
                 disabledSelector: false,
                 removable: true,
+                rank: 10,
                 onShowDropdown: () => {},
                 onHideDropdown: () => {},
                 beforeAddToScreen: (filterCtx, domDict, dom) => {},
@@ -582,6 +606,11 @@ const HpvFilterBar = {
                 } else {
                     filterSelectorBtn.classList.add(HpvFilterBar.CssClassName.SELECTOR_BTN_DISABLED);
                 }
+            }
+
+            // if do not have a rank, set default to 10
+            if ( filterSelectorBtn.getAttribute('data-rank') === null ) {
+                filterSelectorBtn.setAttribute('data-rank', this.options.rank || 10);
             }
 
             // get position of picker-btn

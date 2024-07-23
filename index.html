@@ -60,13 +60,13 @@
             background-color: white;
         }
 
-        #checklistOrderContainer .hpv-checklist .custom-checkbox[data-state="1"]::before {
+        #checklistOrderContainer.hpv-checklist .custom-checkbox[data-state="1"]::before {
             border-bottom: 7px solid black;
         }
-        #checklistOrderContainer .hpv-checklist .custom-checkbox[data-state="2"]::before {
+        #checklistOrderContainer.hpv-checklist .custom-checkbox[data-state="2"]::before {
             border-top: 7px solid black;
         }
-        #checklistOrderContainer .hpv-checklist .custom-checkbox[data-state="1"]::before, .hpv-checklist .custom-checkbox[data-state="2"]::before {
+        #checklistOrderContainer.hpv-checklist .custom-checkbox[data-state="1"]::before, #checklistOrderContainer.hpv-checklist .custom-checkbox[data-state="2"]::before {
             content: '';
             position: absolute;
             top: 50%;
@@ -77,7 +77,7 @@
             border-right: 5px solid transparent;
             transform: translate(-50%, -50%);
         }
-        #checklistOrderContainer .hpv-checklist .custom-checkbox[data-state="1"], .hpv-checklist .custom-checkbox[data-state="2"] {
+        #checklistOrderContainer.hpv-checklist .custom-checkbox[data-state="1"], #checklistOrderContainer.hpv-checklist .custom-checkbox[data-state="2"] {
             background-color: unset;
             display: inline-block;
             width: 15px;
@@ -85,7 +85,7 @@
             position: relative;
         }
         /* disable old checkbox content */
-        #checklistOrderContainer .hpv-checklist .custom-checkbox[data-checked=true] .checkbox-inner {
+        #checklistOrderContainer.hpv-checklist .custom-checkbox[data-checked=true] .checkbox-inner {
             display: none !important;
         }
     </style>
@@ -260,6 +260,7 @@
             "selector": new HpvFilterBar.Selector({
                 "label": "Status",
                 "defaultText": "Todos",
+                "rank": 1,
                 "disabledSelector": true,
                 "immediateDisplay": true,
                 "constructSelectorContent": (filterCtx, domDict, dom) => {
@@ -424,13 +425,13 @@
             "id": "sort-data",
             "maxInstances": 1,
             "selector": new HpvFilterBar.Selector({
-                "searchable": false,
                 "immediateDisplay": true,
                 "removable": false,
                 "floatingContentTitle": "Ordenar Por",
                 "constructSelector": (filterCtx, domDict) => {
                     const div = document.createElement('div');
                     div.classList.add('sort-btn', 'icon-btn');
+                    div.setAttribute('data-rank', 99);
                     div.innerHTML = '<span title="Ordenar Dados"><i class="fas fa-sort-amount-up-alt"></i></span>';
                     
                     return div;
