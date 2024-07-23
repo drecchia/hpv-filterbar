@@ -9,12 +9,12 @@
     -ms-user-select: none;      /* IE 10 and IE 11 */
     user-select: none;          /* Standard syntax */
 }
-.hpv-filter-bar .picker-btn:hover {
+.hpv-filter-bar .icon-btn:hover {
     background-color: #fff;
     border-color: #3273dc;
     color: #3273dc;
 }
-.hpv-filter-bar .picker-btn {
+.hpv-filter-bar .icon-btn {
     font-size: 14px;
     padding: 4px;
     border-radius: 4px;
