@@ -8,6 +8,7 @@ const HpvFilterBar = {
         FLOATING_CONTENT_HEADER: 'floating-content-header',
         FLOATING_CONTENT_BODY: 'floating-content-body',
         
+        ICON_BTN: 'icon-btn',
         PICKER_BTN: 'picker-btn',
         PICKER_ITEM: 'filter-content-item',
         PICKER_FLOATING_CONTENT: 'picker-floating-content',
@@ -28,6 +29,8 @@ const HpvFilterBar = {
                 afterToggleDropdown: (source, target) => {},
                 afterCreated: (bar) => {},
                 afterRemoveSelector: (bar, filterCtx) => {},
+                onFilterAdded: (bar, filterCtx) => {},
+                onFiltersAdded: (bar, filters) => {},
                 ...opts
             };
 
@@ -48,6 +51,25 @@ const HpvFilterBar = {
             // fire created callback
             this.doCallbackCreatedEvent();
         }
+
+        sortVisibleElementsByRank() {
+            const parent = this.container;
+        
+            // Get all visible child elements
+            const childrenArray = Array.from(parent.children).filter(child => {
+                return child.style.display !== 'none';
+            });
+        
+            // Sort the children by data-rank, treating elements without data-rank as having a rank of 1
+            childrenArray.sort((a, b) => {
+                const rankA = parseInt(a.getAttribute('data-rank')) || 1;
+                const rankB = parseInt(b.getAttribute('data-rank')) || 1;
+                return rankA - rankB;
+            });
+        
+            // Append sorted elements back to the parent element
+            childrenArray.forEach(child => parent.appendChild(child));
+        }        
 
         doCallbackCreatedEvent() {
             if ( this.options.afterCreated && this.options.afterCreated instanceof Function ) {
@@ -75,6 +97,9 @@ const HpvFilterBar = {
                 // hide dropdown
                 this.pickerBtn.toggleFloatingContentVisibility();
 
+                // sort elements by rank
+                this.sortVisibleElementsByRank();
+
                 // we have added last possible item
                 if (filterCtx.reachedInstancesLimit()) {
                     this.pickerBtn.disableMenuEntry(filterCtx.getId());
@@ -88,9 +113,9 @@ const HpvFilterBar = {
                 const filterCtx = e.detail.filter;
                 console.log('Opening dropdown for filter ' + filterCtx.getId());
 
-                // 1. call filterCtx.getSelector().createDom() to get the dom element
+                // 1. call filterCtx.getSelector().constructSelectorFloatingContent() to get the dom element
                 const selector = filterCtx.getSelector();
-                const el = selector.createDom();
+                const el = selector.constructSelectorFloatingContent();
                 if (!el) return;
 
                 // get parent of el
@@ -111,18 +136,22 @@ const HpvFilterBar = {
                     contentHeader.classList.add(HpvFilterBar.CssClassName.FLOATING_CONTENT_HEADER);
 
                     const strong = document.createElement('strong');
-                    strong.innerHTML = 'Filtros';
-
-                    const removeSelectorEl = document.createElement('div');
-                    removeSelectorEl.classList.add('remove-selector');
-                    // on click
-                    removeSelectorEl.addEventListener('click', () => {
-                        this.removeSelector(filterCtx.getId());
-                        wrapperNode.style.display = wrapperNode.style.display == 'block' ? 'none' : 'block';
-                    });
+                    strong.innerHTML = selector.options.floatingContentTitle || 'Filtros';
 
                     contentHeader.appendChild(strong);
-                    contentHeader.appendChild(removeSelectorEl);
+
+                    if ( selector.options.removable ) {
+                        const removeSelectorEl = document.createElement('div');
+                        removeSelectorEl.classList.add('remove-selector');
+                        // on click
+                        removeSelectorEl.addEventListener('click', () => {
+                            this.removeSelector(filterCtx.getId());
+                            wrapperNode.style.display = wrapperNode.style.display == 'block' ? 'none' : 'block';
+                        });
+
+                        // add to header
+                        contentHeader.appendChild(removeSelectorEl);
+                    }
 
                     wrapperNode.appendChild(contentHeader);
 
@@ -169,6 +198,16 @@ const HpvFilterBar = {
             }
         }
 
+        addFilters(filters) {
+            filters.forEach((filterCtx) => {
+                this.addFilter(filterCtx);
+            });
+
+            if ( this.options.onFiltersAdded && this.options.onFiltersAdded instanceof Function ) {
+                this.options.onFiltersAdded(this, filters);
+            }
+        }
+
         addFilter(filterCtx) {
             // set parent reference
             filterCtx.setBar(this);
@@ -176,9 +215,11 @@ const HpvFilterBar = {
             this.filters.set(filterCtx.getId(), filterCtx);
             
             const filterPicker = filterCtx.getPicker();
-            filterPicker.setContext(filterCtx);
 
-            this.pickerBtn.addPicker(filterPicker);
+            if ( filterPicker ) {
+                filterPicker.setContext(filterCtx);
+                this.pickerBtn.addPicker(filterPicker);
+            }
 
             const filterSelector = filterCtx.getSelector();
             filterSelector.setContext(filterCtx);
@@ -212,8 +253,8 @@ const HpvFilterBar = {
     Context: class {
         constructor(opts = {}) {
             this.options = {
-                picker: new HpvFilterBar.ItemPicker(),
-                selector: new HpvFilterBar.Selector(),
+                picker: null,
+                selector: null,
                 afterRemoveFromBar: (bar, filterCtx) => {},
                 maxInstances: 1,
                 ...opts
@@ -318,7 +359,8 @@ const HpvFilterBar = {
             // allow user to customize picker button via opts
             const pickerTrigger = this.options.createPickerEl(this.options);
             // enforce control properties
-            pickerTrigger.classList.add(HpvFilterBar.CssClassName.PICKER_BTN);
+            pickerTrigger.classList.add(HpvFilterBar.CssClassName.PICKER_BTN, HpvFilterBar.CssClassName.ICON_BTN);
+            pickerTrigger.setAttribute('data-rank', 100);
             pickerTrigger.addEventListener('click', this.toggleFloatingContentVisibility.bind(this));
 
             this.parent.container.appendChild(pickerTrigger);
@@ -436,14 +478,20 @@ const HpvFilterBar = {
             this.options = {
                 label: 'Selected',
                 defaultText: 'All',
+                floatingContentTitle: 'Filters',
                 immediateDisplay: false,
                 disabledSelector: false,
+                removable: true,
+                rank: 10,
                 onShowDropdown: () => {},
                 onHideDropdown: () => {},
                 beforeAddToScreen: (filterCtx, domDict, dom) => {},
                 afterAddToScreen: (filterCtx, domDict, dom) => {},
-                createDom: (filterCtx) => {},
+                constructSelectorFloatingContent: (filterCtx) => {},
                 getRules: (filterCtx, dom) => { return [] },
+                constructSelector: null,
+                constructSelectorContent: null,
+                constructSelectorFloatingContent: null,
                 ...opts
             };
             
@@ -463,9 +511,9 @@ const HpvFilterBar = {
             }
         }
 
-        createDom() {
-            if (!this.dom && this.options.createDom) {
-                this.dom = this.options.createDom(this.filterCtx, this.domDict);
+        constructSelectorFloatingContent() {
+            if (!this.dom && this.options.constructSelectorFloatingContent) {
+                this.dom = this.options.constructSelectorFloatingContent(this.filterCtx, this.domDict);
             }
             return this.dom;
         }
@@ -490,8 +538,22 @@ const HpvFilterBar = {
             const filterSelectorBtn = document.getElementById(this.filterCtx.getId() + '-selector-btn-0');
             const filterSelectorText = filterSelectorBtn.querySelector('.' + HpvFilterBar.CssClassName.SELECTOR_BTN_TEXT);
 
-            if ( this.options.constructHtmlLabel && this.options.constructHtmlLabel instanceof Function ) {
-                filterSelectorText.innerHTML = this.options.constructHtmlLabel(this.filterCtx, this.domDict, this.dom);
+            // custom selector may not have text
+            if ( !filterSelectorText) {
+                console.error('Selector text not found');
+                return;
+            }
+
+            if ( this.options.constructSelectorContent && this.options.constructSelectorContent instanceof Function ) {
+                const content = this.options.constructSelectorContent(this.filterCtx, this.domDict, this.dom);
+                // if content is element
+                if (content instanceof HTMLElement) {
+                    // remove any childs 
+                    filterSelectorText.innerHTML = '';
+                    filterSelectorText.appendChild(content);
+                } else {
+                    console.error('Content must be an instance of HTMLElement');
+                }
             } else {
                 filterSelectorText.innerHTML = this.options.label;
             }
@@ -505,31 +567,50 @@ const HpvFilterBar = {
             // Add selector to filterBar, so user can see it and interact with it
             console.log(`Adding selector ${contextId} to screen`);
 
-            const filterSelectorBtn = document.createElement('div');
-            filterSelectorBtn.classList.add(HpvFilterBar.CssClassName.SELECTOR_BTN);
-            filterSelectorBtn.id = contextId + '-selector-btn-' + this.filterCtx.instances;
+            let filterSelectorBtn = null;
 
-            const filterSelectorText = document.createElement('span');
-            filterSelectorText.classList.add(HpvFilterBar.CssClassName.SELECTOR_BTN_TEXT);
+            if ( this.options.constructSelector && this.options.constructSelector instanceof Function ) {
+                filterSelectorBtn = this.options.constructSelector(this.filterCtx, this.domDict);
+                filterSelectorBtn.id = contextId + '-selector-btn-' + this.filterCtx.instances;
+            } else { 
+                filterSelectorBtn = document.createElement('div');
+                filterSelectorBtn.classList.add(HpvFilterBar.CssClassName.SELECTOR_BTN);
+                filterSelectorBtn.id = contextId + '-selector-btn-' + this.filterCtx.instances;
 
-            if ( this.options.constructHtmlLabel && this.options.constructHtmlLabel instanceof Function ) {
-                filterSelectorText.innerHTML = this.options.constructHtmlLabel(this.filterCtx, this.domDict, this.dom);
-            } else {
-                filterSelectorText.innerHTML = this.options.label;
+                const filterSelectorText = document.createElement('span');
+                filterSelectorText.classList.add(HpvFilterBar.CssClassName.SELECTOR_BTN_TEXT);
+
+                if ( this.options.constructSelectorContent && this.options.constructSelectorContent instanceof Function ) {
+                    const content = this.options.constructSelectorContent(this.filterCtx, this.domDict, this.dom);
+                    // if content is element
+                    if (content instanceof HTMLElement) {
+                        // remove any childs 
+                        filterSelectorText.appendChild(content);
+                    } else {
+                        console.error('Content must be an instance of HTMLElement');
+                    }
+                } else {
+                    filterSelectorText.innerHTML = this.options.label;
+                }
+
+                const filterSelectorArrowContainer = document.createElement('div');
+                filterSelectorArrowContainer.classList.add(HpvFilterBar.CssClassName.SELECTOR_BTN_ARROW_CONTAINER);
+
+                const filterSelectorArrow = document.createElement('span');
+                filterSelectorArrow.classList.add(HpvFilterBar.CssClassName.SELECTOR_BTN_ARROW);
+                filterSelectorBtn.appendChild(filterSelectorText);
+
+                if (!this.options.disabledSelector) {
+                    filterSelectorArrowContainer.appendChild(filterSelectorArrow);
+                    filterSelectorBtn.appendChild(filterSelectorArrowContainer);
+                } else {
+                    filterSelectorBtn.classList.add(HpvFilterBar.CssClassName.SELECTOR_BTN_DISABLED);
+                }
             }
 
-            const filterSelectorArrowContainer = document.createElement('div');
-            filterSelectorArrowContainer.classList.add(HpvFilterBar.CssClassName.SELECTOR_BTN_ARROW_CONTAINER);
-
-            const filterSelectorArrow = document.createElement('span');
-            filterSelectorArrow.classList.add(HpvFilterBar.CssClassName.SELECTOR_BTN_ARROW);
-            filterSelectorBtn.appendChild(filterSelectorText);
-
-            if (!this.options.disabledSelector) {
-                filterSelectorArrowContainer.appendChild(filterSelectorArrow);
-                filterSelectorBtn.appendChild(filterSelectorArrowContainer);
-            } else {
-                filterSelectorBtn.classList.add(HpvFilterBar.CssClassName.SELECTOR_BTN_DISABLED);
+            // if do not have a rank, set default to 10
+            if ( filterSelectorBtn.getAttribute('data-rank') === null ) {
+                filterSelectorBtn.setAttribute('data-rank', this.options.rank || 10);
             }
 
             // get position of picker-btn
