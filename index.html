@@ -48,6 +48,46 @@
         .floating-content.faturado-floating-content .hpv-checklist .hr-no-optgroups {
             display: none;
         }
+
+        .hpv-filter-bar .icon-btn.sort-btn {
+            background-color: rgb(202, 136, 13);
+            border-color: rgb(202, 136, 13);
+            color: white;
+        }
+        .hpv-filter-bar .icon-btn.sort-btn:hover {
+            color: rgb(202, 136, 13);
+            border-color: rgb(202, 136, 13);
+            background-color: white;
+        }
+
+        #checklistOrderContainer .hpv-checklist .custom-checkbox[data-state="1"]::before {
+            border-bottom: 7px solid black;
+        }
+        #checklistOrderContainer .hpv-checklist .custom-checkbox[data-state="2"]::before {
+            border-top: 7px solid black;
+        }
+        #checklistOrderContainer .hpv-checklist .custom-checkbox[data-state="1"]::before, .hpv-checklist .custom-checkbox[data-state="2"]::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            transform: translate(-50%, -50%);
+        }
+        #checklistOrderContainer .hpv-checklist .custom-checkbox[data-state="1"], .hpv-checklist .custom-checkbox[data-state="2"] {
+            background-color: unset;
+            display: inline-block;
+            width: 15px;
+            height: 15px;
+            position: relative;
+        }
+        /* disable old checkbox content */
+        #checklistOrderContainer .hpv-checklist .custom-checkbox[data-checked=true] .checkbox-inner {
+            display: none !important;
+        }
     </style>
     <link rel="stylesheet" type="text/css" href="./src/css/filterbar.css">
     <script src="./src/js/filterbar.js"></script>
@@ -253,6 +293,7 @@
             "selector": new HpvFilterBar.Selector({
                 "label": "Faturado",
                 "defaultText": "Todas",
+                "floatingContentTitle": "Foi Faturado?",
                 "constructSelectorContent": (filterCtx, domDict, dom) => {
                     const opts = filterCtx.getSelector().options;
                     let selectedLabels = null;
@@ -379,6 +420,57 @@
             }),
         });
 
+        const columnOrder = new HpvFilterBar.Context({
+            "id": "sort-data",
+            "maxInstances": 1,
+            "selector": new HpvFilterBar.Selector({
+                "searchable": false,
+                "immediateDisplay": true,
+                "removable": false,
+                "floatingContentTitle": "Ordenar Por",
+                "constructSelector": (filterCtx, domDict) => {
+                    const div = document.createElement('div');
+                    div.classList.add('sort-btn', 'icon-btn');
+                    div.innerHTML = '<span title="Ordenar Dados"><i class="fas fa-sort-amount-up-alt"></i></span>';
+                    
+                    return div;
+                },
+                "constructSelectorContent": (filterCtx, domDict, dom) => {
+                    return document.createElement('div');
+                },
+                "getRules": (filterCtx, domDict, dom) => {
+                    return [];
+                },
+                "constructSelectorFloatingContent": (filterCtx, domDict, dom) => {
+                    const container = document.createElement('div');
+                    container.id = 'checklistOrderContainer';
+                    document.body.appendChild(container);
+
+                    domDict.checklist = new HpvCheckList('checklistOrderContainer', {
+                        searchPlaceholder: "Buscar por...",
+                        selectMode: 'single', // 'single' or 'multiple'
+                        states: [0, 1, 2],
+                        maxSelectableItems: 1,
+                        searchMode: 'local',
+                        fieldMap: {
+                            keyField: 'id',
+                            labelField: 'label',
+                            valueField: 'value',
+                        },
+                    });
+        
+                    const items = [
+                        { id: 1, label: 'Nome' },
+                        { id: 2, label: 'Cidade' },
+                        { id: 3, label: 'Data' },
+                    ];
+        
+                    domDict.checklist.addItems(items);
+                    
+                    return container;                }
+            }),
+        });
+
         const dateRangeFilter = new HpvFilterBar.Context({
             "id": "date-range",
             "maxInstances": 1,
@@ -448,6 +540,7 @@
         filterBar.addFilter(wordFilter);
         filterBar.addFilter(dateRangeFilter);
         filterBar.addFilter(servicosFilter);
+        filterBar.addFilter(columnOrder);
     </script>
 </body>
 </html>

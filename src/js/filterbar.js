@@ -8,6 +8,7 @@ const HpvFilterBar = {
         FLOATING_CONTENT_HEADER: 'floating-content-header',
         FLOATING_CONTENT_BODY: 'floating-content-body',
         
+        ICON_BTN: 'icon-btn',
         PICKER_BTN: 'picker-btn',
         PICKER_ITEM: 'filter-content-item',
         PICKER_FLOATING_CONTENT: 'picker-floating-content',
@@ -336,7 +337,7 @@ const HpvFilterBar = {
             // allow user to customize picker button via opts
             const pickerTrigger = this.options.createPickerEl(this.options);
             // enforce control properties
-            pickerTrigger.classList.add(HpvFilterBar.CssClassName.PICKER_BTN);
+            pickerTrigger.classList.add(HpvFilterBar.CssClassName.PICKER_BTN, HpvFilterBar.CssClassName.ICON_BTN);
             pickerTrigger.addEventListener('click', this.toggleFloatingContentVisibility.bind(this));
 
             this.parent.container.appendChild(pickerTrigger);
@@ -464,6 +465,9 @@ const HpvFilterBar = {
                 afterAddToScreen: (filterCtx, domDict, dom) => {},
                 constructSelectorFloatingContent: (filterCtx) => {},
                 getRules: (filterCtx, dom) => { return [] },
+                constructSelector: null,
+                constructSelectorContent: null,
+                constructSelectorFloatingContent: null,
                 ...opts
             };
             
@@ -510,6 +514,12 @@ const HpvFilterBar = {
             const filterSelectorBtn = document.getElementById(this.filterCtx.getId() + '-selector-btn-0');
             const filterSelectorText = filterSelectorBtn.querySelector('.' + HpvFilterBar.CssClassName.SELECTOR_BTN_TEXT);
 
+            // custom selector may not have text
+            if ( !filterSelectorText) {
+                console.error('Selector text not found');
+                return;
+            }
+
             if ( this.options.constructSelectorContent && this.options.constructSelectorContent instanceof Function ) {
                 const content = this.options.constructSelectorContent(this.filterCtx, this.domDict, this.dom);
                 // if content is element
@@ -533,38 +543,45 @@ const HpvFilterBar = {
             // Add selector to filterBar, so user can see it and interact with it
             console.log(`Adding selector ${contextId} to screen`);
 
-            const filterSelectorBtn = document.createElement('div');
-            filterSelectorBtn.classList.add(HpvFilterBar.CssClassName.SELECTOR_BTN);
-            filterSelectorBtn.id = contextId + '-selector-btn-' + this.filterCtx.instances;
+            let filterSelectorBtn = null;
 
-            const filterSelectorText = document.createElement('span');
-            filterSelectorText.classList.add(HpvFilterBar.CssClassName.SELECTOR_BTN_TEXT);
+            if ( this.options.constructSelector && this.options.constructSelector instanceof Function ) {
+                filterSelectorBtn = this.options.constructSelector(this.filterCtx, this.domDict);
+                filterSelectorBtn.id = contextId + '-selector-btn-' + this.filterCtx.instances;
+            } else { 
+                filterSelectorBtn = document.createElement('div');
+                filterSelectorBtn.classList.add(HpvFilterBar.CssClassName.SELECTOR_BTN);
+                filterSelectorBtn.id = contextId + '-selector-btn-' + this.filterCtx.instances;
 
-            if ( this.options.constructSelectorContent && this.options.constructSelectorContent instanceof Function ) {
-                const content = this.options.constructSelectorContent(this.filterCtx, this.domDict, this.dom);
-                // if content is element
-                if (content instanceof HTMLElement) {
-                    // remove any childs 
-                    filterSelectorText.appendChild(content);
+                const filterSelectorText = document.createElement('span');
+                filterSelectorText.classList.add(HpvFilterBar.CssClassName.SELECTOR_BTN_TEXT);
+
+                if ( this.options.constructSelectorContent && this.options.constructSelectorContent instanceof Function ) {
+                    const content = this.options.constructSelectorContent(this.filterCtx, this.domDict, this.dom);
+                    // if content is element
+                    if (content instanceof HTMLElement) {
+                        // remove any childs 
+                        filterSelectorText.appendChild(content);
+                    } else {
+                        console.error('Content must be an instance of HTMLElement');
+                    }
                 } else {
-                    console.error('Content must be an instance of HTMLElement');
+                    filterSelectorText.innerHTML = this.options.label;
                 }
-            } else {
-                filterSelectorText.innerHTML = this.options.label;
-            }
 
-            const filterSelectorArrowContainer = document.createElement('div');
-            filterSelectorArrowContainer.classList.add(HpvFilterBar.CssClassName.SELECTOR_BTN_ARROW_CONTAINER);
+                const filterSelectorArrowContainer = document.createElement('div');
+                filterSelectorArrowContainer.classList.add(HpvFilterBar.CssClassName.SELECTOR_BTN_ARROW_CONTAINER);
 
-            const filterSelectorArrow = document.createElement('span');
-            filterSelectorArrow.classList.add(HpvFilterBar.CssClassName.SELECTOR_BTN_ARROW);
-            filterSelectorBtn.appendChild(filterSelectorText);
+                const filterSelectorArrow = document.createElement('span');
+                filterSelectorArrow.classList.add(HpvFilterBar.CssClassName.SELECTOR_BTN_ARROW);
+                filterSelectorBtn.appendChild(filterSelectorText);
 
-            if (!this.options.disabledSelector) {
-                filterSelectorArrowContainer.appendChild(filterSelectorArrow);
-                filterSelectorBtn.appendChild(filterSelectorArrowContainer);
-            } else {
-                filterSelectorBtn.classList.add(HpvFilterBar.CssClassName.SELECTOR_BTN_DISABLED);
+                if (!this.options.disabledSelector) {
+                    filterSelectorArrowContainer.appendChild(filterSelectorArrow);
+                    filterSelectorBtn.appendChild(filterSelectorArrowContainer);
+                } else {
+                    filterSelectorBtn.classList.add(HpvFilterBar.CssClassName.SELECTOR_BTN_DISABLED);
+                }
             }
 
             // get position of picker-btn

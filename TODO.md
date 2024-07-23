@@ -1,9 +1,9 @@
 TODO:
 -----
-Define selector position idx
-Override default selector el creator
+ctx.invalidateRulesCache();
+searchable=false
+Define selector idx position
 Criar fn para ser executada quando componentes do floating containers forem alterados, eliminando chamadas qdo nao há alteracoes, disparando chamada remota ( como é feito hj, hack no attachDropDown ? )
-
 Reestructure component
 Improove callbacks
 Move afterRemoveFromBar from context to selector
